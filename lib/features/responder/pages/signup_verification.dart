@@ -1,15 +1,21 @@
-//PART 2 SIGNUP VERIFICATION
-
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:agap/features/responder/widgets/signup_step_header.dart';
 import 'package:agap/features/responder/widgets/verification_upload_card.dart';
 import 'package:agap/theme/color.dart';
+import 'package:agap/features/responder/data/responder_repository.dart';
+import 'package:agap/features/responder/pages/responder_test_page.dart';
 
 class ResponderSignupVerificationPage extends StatefulWidget {
   const ResponderSignupVerificationPage({
     super.key,
+    required this.email,
+    required this.password,
+    required this.firstName,
+    this.middleName,
+    required this.lastName,
+    required this.phone,
     this.idDocumentTitle = 'Employee ID',
     this.idUploadDescription =
         'Upload a clear photo of your employee ID\nto verify you as an authorized responder',
@@ -17,6 +23,12 @@ class ResponderSignupVerificationPage extends StatefulWidget {
     this.idNumberHint = 'e.g. MDRRMO-23102B',
   });
 
+  final String email;
+  final String password;
+  final String firstName;
+  final String? middleName;
+  final String lastName;
+  final String phone;
   final String idDocumentTitle;
   final String idUploadDescription;
   final String idNumberLabel;
@@ -32,6 +44,8 @@ class _ResponderSignupVerificationPageState
   final _scrollController = ScrollController();
   final _employeeIdController = TextEditingController();
   final _imagePicker = ImagePicker();
+  final _repository = ResponderRepository();
+  bool _isLoading = false;
   String? _selectedRole;
   Uint8List? _employeeIdImageBytes;
   String? _employeeIdImageName;
@@ -193,9 +207,9 @@ class _ResponderSignupVerificationPageState
                         children: [
                           Expanded(
                             child: OutlinedButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
+                              onPressed: _isLoading
+                                  ? null
+                                  : () => Navigator.of(context).pop(),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: AppColors.agapOrangeDeep,
                                 side: const BorderSide(
@@ -220,45 +234,56 @@ class _ResponderSignupVerificationPageState
                           Expanded(
                             flex: 2,
                             child: FilledButton(
-                              onPressed: _handleCreateProfile,
+                              onPressed:
+                                  _isLoading ? null : _handleCreateProfile,
                               style: FilledButton.styleFrom(
                                 backgroundColor: AppColors.agapNavy,
                                 foregroundColor: Colors.white,
                                 minimumSize: const Size.fromHeight(54),
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 14),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 14),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(999),
                                 ),
                               ),
-                              child: Row(
-                                children: [
-                                  const SizedBox(width: 8),
-                                  const Expanded(
-                                    child: Text(
-                                      'CREATE PROFILE',
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w800,
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      height: 24,
+                                      width: 24,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2,
                                       ),
+                                    )
+                                  : Row(
+                                      children: [
+                                        const SizedBox(width: 8),
+                                        const Expanded(
+                                          child: Text(
+                                            'CREATE PROFILE',
+                                            style: TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w800,
+                                            ),
+                                          ),
+                                        ),
+                                        Container(
+                                          width: 40,
+                                          height: 40,
+                                          decoration: const BoxDecoration(
+                                            color:
+                                                AppColors.overlayWhiteMedium,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          alignment: Alignment.center,
+                                          child: const Icon(
+                                            Icons.chevron_right_rounded,
+                                            size: 28,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                                  Container(
-                                    width: 40,
-                                    height: 40,
-                                    decoration: const BoxDecoration(
-                                      color: AppColors.overlayWhiteMedium,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    alignment: Alignment.center,
-                                    child: const Icon(
-                                      Icons.chevron_right_rounded,
-                                      size: 28,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ],
-                              ),
                             ),
                           ),
                         ],
@@ -274,13 +299,48 @@ class _ResponderSignupVerificationPageState
     );
   }
 
-  void _handleCreateProfile() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Responder profile creation is ready for backend.'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+  Future<void> _handleCreateProfile() async {
+    if (_employeeIdController.text.trim().isEmpty || _selectedRole == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill in all fields.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      await _repository.signUp(
+        email: widget.email,
+        password: widget.password,
+        firstName: widget.firstName,
+        middleName: widget.middleName,
+        lastName: widget.lastName,
+        phone: widget.phone,
+        employeeIdNumber: _employeeIdController.text.trim(),
+        responderRole: _selectedRole!,
+        idImageBytes: _employeeIdImageBytes,
+        idImageName: _employeeIdImageName,
+      );
+
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const ResponderTestPage()),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: $e'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   Future<void> _pickEmployeeIdImage() async {
@@ -311,18 +371,14 @@ class _ResponderSignupVerificationPageState
       },
     );
 
-    if (source == null) {
-      return;
-    }
+    if (source == null) return;
 
     final image = await _imagePicker.pickImage(
       source: source,
       imageQuality: 88,
     );
 
-    if (image == null) {
-      return;
-    }
+    if (image == null) return;
 
     final bytes = await image.readAsBytes();
     setState(() {
