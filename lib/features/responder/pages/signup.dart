@@ -19,6 +19,7 @@ class _ResponderSignupPageState extends State<ResponderSignupPage> {
   final _lastNameController = TextEditingController();
   final _middleNameController = TextEditingController();
   final _suffixController = TextEditingController();
+  final _emailController = TextEditingController();
   final _phoneController = TextEditingController(text: '+63');
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -32,6 +33,7 @@ class _ResponderSignupPageState extends State<ResponderSignupPage> {
     _lastNameController.dispose();
     _middleNameController.dispose();
     _suffixController.dispose();
+    _emailController.dispose();
     _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
@@ -83,6 +85,9 @@ class _ResponderSignupPageState extends State<ResponderSignupPage> {
                                 label: 'Last name',
                                 hint: 'e.g. Dela Cruz',
                                 controller: _lastNameController,
+                                validator: (v) => v == null || v.trim().isEmpty
+                                    ? 'Required'
+                                    : null,
                               ),
                             ),
                           ],
@@ -100,12 +105,28 @@ class _ResponderSignupPageState extends State<ResponderSignupPage> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: SignupField(
-                                label: 'Suffixes',
-                                hint: 'none',
+                                label: 'Suffix',
+                                hint: 'e.g. Jr.',
                                 controller: _suffixController,
                               ),
                             ),
                           ],
+                        ),
+                        const SizedBox(height: 14),
+                        SignupField(
+                          label: 'Email',
+                          hint: 'e.g. juan@mdrrmo.gov.ph',
+                          controller: _emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty) {
+                              return 'Required';
+                            }
+                            if (!v.contains('@')) {
+                              return 'Enter a valid email';
+                            }
+                            return null;
+                          },
                         ),
                         const SizedBox(height: 14),
                         SignupField(
@@ -124,6 +145,11 @@ class _ResponderSignupPageState extends State<ResponderSignupPage> {
                           label: 'Password',
                           controller: _passwordController,
                           obscureText: _isHiddenPassword,
+                          validator: (v) {
+                            if (v == null || v.isEmpty) return 'Required';
+                            if (v.length < 6) return 'Min 6 characters';
+                            return null;
+                          },
                           suffixIcon: IconButton(
                             onPressed: () {
                               setState(() {
@@ -234,7 +260,16 @@ class _ResponderSignupPageState extends State<ResponderSignupPage> {
     if (_formKey.currentState!.validate()) {
       Navigator.of(context).push(
         MaterialPageRoute<void>(
-          builder: (_) => const ResponderSignupVerificationPage(),
+          builder: (_) => ResponderSignupVerificationPage(
+            email: _emailController.text.trim(),
+            password: _passwordController.text.trim(),
+            firstName: _firstNameController.text.trim(),
+            middleName: _middleNameController.text.trim().isEmpty
+                ? null
+                : _middleNameController.text.trim(),
+            lastName: _lastNameController.text.trim(),
+            phone: _phoneController.text.trim(),
+          ),
         ),
       );
     }

@@ -15,25 +15,31 @@ void main() async {
 Future<void> _initializeSupabaseIfConfigured() async {
   try {
     await dotenv.load(fileName: '.env');
-  } catch (_) {
+  } catch (e) {
+    debugPrint(' .env not found: $e');
     return;
   }
-// check if required env vars are present and non-empty before initializing Supabase
+
   final supabaseUrl = dotenv.env['SUPABASE_URL'];
   final supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY'];
-// If either is missing or empty, skip initialization
+
+  debugPrint('SUPABASE_URL: $supabaseUrl');
+  debugPrint('SUPABASE_ANON_KEY: ${supabaseAnonKey != null ? 'found' : 'missing'}');
+
   if (supabaseUrl == null ||
       supabaseUrl.isEmpty ||
       supabaseAnonKey == null ||
       supabaseAnonKey.isEmpty) {
+    debugPrint('Supabase env vars missing or empty, skipping init.');
     return;
   }
-// Initialize Supabase with the provided URL and anon key
+
   await Supabase.initialize(
     url: supabaseUrl,
     anonKey: supabaseAnonKey,
   );
   _isSupabaseConfigured = true;
+  debugPrint('Supabase initialized successfully.');
 }
 
 class MyApp extends StatelessWidget {
