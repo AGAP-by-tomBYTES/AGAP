@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:agap/theme/color.dart';
 
 class RoleCard extends StatelessWidget {
   const RoleCard({
@@ -44,7 +45,7 @@ class RoleCard extends StatelessWidget {
               Text(
                 subtitle,
                 style: const TextStyle(
-                  color: Color(0xCCFFFFFF),
+                  color: AppColors.overlayWhiteSoft,
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
                 ),

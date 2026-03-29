@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:agap/features/auth/pages/splashscreen.dart';
+import 'package:agap/theme/color.dart';
 
-//brand colors
-const _agapOrange = Color(0xFFF05C33);
 bool _isSupabaseConfigured = false;
 
 void main() async {
@@ -47,10 +46,10 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: _agapOrange,
-          primary: _agapOrange,
+          seedColor: AppColors.agapOrange,
+          primary: AppColors.agapOrange,
         ),
-        scaffoldBackgroundColor: _agapOrange,
+        scaffoldBackgroundColor: AppColors.agapOrange,
         useMaterial3: true,
       ),
       home: const SplashPage(),
