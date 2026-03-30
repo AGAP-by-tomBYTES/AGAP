@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-
 import 'package:agap/features/auth/widgets/role_card.dart';
 import 'package:agap/features/auth/widgets/role_screen_background.dart';
 import 'package:agap/features/auth/widgets/role_screen_footer.dart';
-import 'package:agap/features/responder/pages/signup.dart';
+import 'package:agap/features/auth/pages/login_page.dart';
 import 'package:agap/theme/color.dart';
 
 class RoleScreen extends StatelessWidget {
@@ -29,7 +28,11 @@ class RoleScreen extends StatelessWidget {
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute<void>(
-                          builder: (_) => const ResponderSignupPage(),
+                          builder: (_) => const LoginPage(
+                            roleLabel: 'Responder',
+                            idLabel: 'Employee ID',
+                            idHint: 'e.g. MDRRMO-23102B',
+                          ),
                         ),
                       );
                     },
@@ -40,7 +43,17 @@ class RoleScreen extends StatelessWidget {
                     title: "I'm a Resident",
                     subtitle: '*For residents',
                     backgroundColor: AppColors.agapOrange,
-                    onTap: () => _showRoleMessage(context, 'Resident'),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const LoginPage(
+                            roleLabel: 'Resident',
+                            idLabel: 'Resident ID',
+                            idHint: 'e.g. MDRRMO-23102B',
+                          ),
+                        ),
+                      );
+                    },
                   ),
                   const Spacer(),
                   const RoleScreenFooter(),
@@ -53,12 +66,4 @@ class RoleScreen extends StatelessWidget {
     );
   }
 
-  void _showRoleMessage(BuildContext context, String role) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$role flow coming next.'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
 }
