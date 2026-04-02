@@ -67,12 +67,12 @@ class _ResidentSignupLocationPageState
     super.initState();
 
     _houseCtrl.text = widget.data.houseNo ?? '';
-    _streetCtrl.text = widget.data.street ?? '';
-    _barangayCtrl.text = widget.data.barangay ?? '';
-    _municipalityCtrl.text = widget.data.municipality ?? '';
-    _cityCtrl.text = widget.data.city ?? '';
-    _provinceCtrl.text = widget.data.province ?? '';
-    _postalCtrl.text = widget.data.postalCode ?? '';
+    _streetCtrl.text = widget.data.street;
+    _barangayCtrl.text = widget.data.barangay;
+    _municipalityCtrl.text = widget.data.municipality;
+    _cityCtrl.text = widget.data.city;
+    _provinceCtrl.text = widget.data.province;
+    _postalCtrl.text = widget.data.postalCode;
     _landmarkCtrl.text = widget.data.landmark ?? '';
 
     _bind(_houseCtrl, (v) => widget.data.houseNo = v);
