@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:agap/config/app_config.dart';
 import 'package:agap/features/responder/widgets/signup_step_header.dart';
 import 'package:agap/features/responder/widgets/verification_upload_card.dart';
 import 'package:agap/theme/color.dart';
@@ -299,6 +300,18 @@ class _ResponderSignupVerificationPageState
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please fill in all fields.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    if (!AppConfig.isSupabaseConfigured) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Supabase is not configured. Add SUPABASE_URL and SUPABASE_ANON_KEY to .env first.',
+          ),
           behavior: SnackBarBehavior.floating,
         ),
       );

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:agap/features/responder/pages/emergency_dashboard_page.dart';
-import 'package:agap/features/responder/data/responder_dashboard_preview_data.dart';
+import 'package:agap/config/app_config.dart';
+import 'package:agap/features/auth/pages/splashscreen.dart';
 import 'package:agap/theme/color.dart';
 
 void main() async {
@@ -37,6 +37,7 @@ Future<void> _initializeSupabaseIfConfigured() async {
     url: supabaseUrl,
     anonKey: supabaseAnonKey,
   );
+  AppConfig.isSupabaseConfigured = true;
   debugPrint('Supabase initialized successfully.');
 }
 
@@ -56,9 +57,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: AppColors.agapOrange,
         useMaterial3: true,
       ),
-      home: const ResponderEmergencyDashboardPage(
-        data: responderDashboardPreviewData,
-      ),
+      home: const SplashPage(),
     );
   }
 }
