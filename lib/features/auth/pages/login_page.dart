@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:agap/config/app_config.dart';
 import 'package:agap/features/auth/pages/forgot_password_page.dart';
 import 'package:agap/features/auth/widgets/login_button.dart';
 import 'package:agap/features/auth/widgets/login_header.dart';
@@ -131,6 +132,19 @@ class _LoginPageState extends State<LoginPage> {
                           promptText: "Don’t have an account? ",
                           actionText: 'Sign Up',
                           onTap: () {
+                            if (widget.roleLabel == 'Responder' &&
+                                !AppConfig.isSupabaseConfigured) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Responder signup requires a .env file with Supabase keys.',
+                                  ),
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                              return;
+                            }
+
                             Navigator.of(context).push(
                               MaterialPageRoute<void>(
                                 builder: (_) => const ResponderSignupPage(),
