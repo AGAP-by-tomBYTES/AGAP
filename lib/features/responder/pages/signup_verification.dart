@@ -6,6 +6,7 @@ import 'package:agap/features/responder/widgets/verification_upload_card.dart';
 import 'package:agap/theme/color.dart';
 import 'package:agap/features/responder/data/responder_repository.dart';
 import 'package:agap/features/responder/pages/responder_test_page.dart';
+import 'package:agap/theme/typography.dart';
 
 class ResponderSignupVerificationPage extends StatefulWidget {
   const ResponderSignupVerificationPage({
@@ -152,7 +153,7 @@ class _ResponderSignupVerificationPageState
                       ),
                       const SizedBox(height: 8),
                       DropdownButtonFormField<String>(
-                        value: _selectedRole,
+                        initialValue: _selectedRole,
                         items: _roleOptions
                             .map(
                               (role) => DropdownMenuItem<String>(
@@ -223,10 +224,7 @@ class _ResponderSignupVerificationPageState
                               ),
                               child: const Text(
                                 'BACK',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w800,
-                                ),
+                                style: AppTypography.buttonPrimary,
                               ),
                             ),
                           ),
@@ -261,10 +259,7 @@ class _ResponderSignupVerificationPageState
                                         const Expanded(
                                           child: Text(
                                             'CREATE PROFILE',
-                                            style: TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w800,
-                                            ),
+                                            style: AppTypography.buttonPrimary,
                                           ),
                                         ),
                                         Container(

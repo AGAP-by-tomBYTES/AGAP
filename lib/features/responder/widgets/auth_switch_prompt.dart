@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:agap/theme/color.dart';
+import 'package:agap/theme/typography.dart';
 
 class AuthSwitchPrompt extends StatelessWidget {
   const AuthSwitchPrompt({
@@ -32,10 +33,8 @@ class AuthSwitchPrompt extends StatelessWidget {
                 onTap: onTap,
                 child: Text(
                   actionText,
-                  style: const TextStyle(
+                  style: AppTypography.buttonLink.copyWith(
                     color: AppColors.agapOrangeDeep,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
                   ),
                 ),
               ),

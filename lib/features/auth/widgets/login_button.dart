@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:agap/theme/color.dart';
+import 'package:agap/theme/typography.dart';
 
 class LoginButton extends StatelessWidget {
   const LoginButton({
@@ -29,10 +30,7 @@ class LoginButton extends StatelessWidget {
           children: [
             const Text(
               'LOGIN',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-              ),
+              style: AppTypography.buttonPrimary,
             ),
             // Container(
             //   width: 40,

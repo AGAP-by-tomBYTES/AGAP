@@ -7,6 +7,7 @@ import 'package:agap/features/responder/pages/signup.dart';
 import 'package:agap/features/responder/widgets/auth_switch_prompt.dart';
 import 'package:agap/features/responder/widgets/signup_field.dart';
 import 'package:agap/theme/color.dart';
+import 'package:agap/theme/typography.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({
@@ -111,12 +112,10 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                               );
                             },
-                            child: const Text(
+                            child: Text(
                               'Forgot Password?',
-                              style: TextStyle(
+                              style: AppTypography.buttonLink.copyWith(
                                 color: AppColors.agapOrangeDeep,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),

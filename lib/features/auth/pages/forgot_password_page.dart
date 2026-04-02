@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:agap/features/auth/widgets/login_header.dart';
 import 'package:agap/features/responder/widgets/signup_field.dart';
 import 'package:agap/theme/color.dart';
+import 'package:agap/theme/typography.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({
@@ -97,10 +98,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                             ),
                             child: const Text(
                               'SEND RESET LINK',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w800,
-                              ),
+                              style: AppTypography.buttonPrimary,
                             ),
                           ),
                         ),
@@ -110,12 +108,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                             onPressed: () {
                               Navigator.of(context).pop();
                             },
-                            child: const Text(
+                            child: Text(
                               'Back to Login',
-                              style: TextStyle(
+                              style: AppTypography.buttonLink.copyWith(
                                 color: AppColors.agapOrangeDeep,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
