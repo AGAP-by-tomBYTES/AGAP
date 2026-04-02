@@ -24,26 +24,31 @@ class ResponderRepository {
     final userId = authResponse.user?.id;
     if (userId == null) throw Exception('Account creation failed.');
 
-    String? idDocumentUrl;
-    if (idImageBytes != null && idImageName != null) {
-      final path = 'responders/$userId/$idImageName';
-      await _client.storage
-          .from('verification-documents')
-          .uploadBinary(path, idImageBytes);
-      idDocumentUrl = path;
-    }
+    try {
+      String? idDocumentUrl;
+      if (idImageBytes != null && idImageName != null) {
+        final path = 'responders/$userId/$idImageName';
+        await _client.storage
+            .from('verification-documents')
+            .uploadBinary(path, idImageBytes);
+        idDocumentUrl = path;
+      }
 
-    await _client.from('responders').insert({
-      'auth_user_id': userId,
-      'first_name': firstName,
-      'middle_name': middleName,
-      'last_name': lastName,
-      'phone': phone,
-      'email': email,
-      'employee_id_number': employeeIdNumber,
-      'responder_role': responderRole,
-      'id_document_url': idDocumentUrl,
-    });
+      await _client.from('responders').insert({
+        'auth_user_id': userId,
+        'first_name': firstName,
+        'middle_name': middleName,
+        'last_name': lastName,
+        'phone': phone,
+        'email': email,
+        'employee_id_number': employeeIdNumber,
+        'responder_role': responderRole,
+        'id_document_url': idDocumentUrl,
+      });
+    } catch (e) {
+      await _client.auth.admin.deleteUser(userId);
+      rethrow;
+    }
   }
 
   Future<void> signIn({
