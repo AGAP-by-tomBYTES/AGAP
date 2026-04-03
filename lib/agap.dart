@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'core/routes/app_route.dart';
 import 'package:agap/theme/color.dart';
 
 //root widget
-//configures global theme and initial route
+//configures global theme and route
 class Agap extends ConsumerWidget {
   const Agap({super.key});
 
@@ -12,10 +13,10 @@ class Agap extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final route = ref.watch(routeProvider);
     
-    return MaterialApp.route(
+    return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'AGAP',
-      RouterConfig: route,
+      routerConfig: route,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: AppColors.agapOrange,
