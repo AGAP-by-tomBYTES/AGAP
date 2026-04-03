@@ -7,7 +7,6 @@ import 'package:agap/features/auth/widgets/login_header.dart';
 import 'package:agap/features/responder/data/responder_dashboard_data.dart';
 import 'package:agap/features/responder/data/responder_dashboard_preview_data.dart';
 import 'package:agap/features/responder/data/responder_repository.dart';
-import 'package:agap/features/responder/pages/emergency_dashboard_page.dart';
 import 'package:agap/features/responder/pages/normal_dashboard_page.dart';
 import 'package:agap/features/responder/pages/signup.dart';
 import 'package:agap/features/responder/widgets/auth_switch_prompt.dart';
@@ -216,8 +215,7 @@ class _LoginPageState extends State<LoginPage> {
 
       Navigator.of(context).pushReplacement(
         MaterialPageRoute<void>(
-          builder: (_) => ResponderEmergencyDashboardPage(data: dashboardData),
-          // builder: (_) => ResponderNormalDashboardPage(data: dashboardData),
+          builder: (_) => ResponderNormalDashboardPage(data: dashboardData),
         ),
       );
     } catch (error) {

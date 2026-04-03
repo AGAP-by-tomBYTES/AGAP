@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:agap/features/responder/data/responder_dashboard_data.dart';
+import 'package:agap/features/responder/pages/alerts_page.dart';
 import 'package:agap/features/responder/pages/profile_page.dart';
 import 'package:agap/features/responder/widgets/dashboard_section_card.dart';
 import 'package:agap/theme/color.dart';
@@ -26,6 +27,7 @@ class ResponderNormalDashboardPage extends StatelessWidget {
                 color: AppColors.profileHeader,
                 padding: const EdgeInsets.fromLTRB(18, 16, 18, 22),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     InkWell(
                       onTap: () {
@@ -64,6 +66,24 @@ class ResponderNormalDashboardPage extends StatelessWidget {
                           ),
                         ),
                       ],
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => ResponderAlertsPage(data: data),
+                          ),
+                        );
+                      },
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.white12,
+                        minimumSize: const Size(42, 42),
+                      ),
+                      icon: const Icon(
+                        Icons.notifications_none_rounded,
+                        color: Colors.white,
+                      ),
                     ),
                   ],
                 ),
