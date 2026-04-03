@@ -4,6 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:agap/theme/color.dart';
 import 'danger_page.dart';
 
+// added imports for database
+import 'package:uuid/uuid.dart';
+import 'package:agap/features/services/models/alert.dart';
+import 'package:agap/features/services/database/alert_dao.dart';
+
 class SosPage extends StatefulWidget {
   const SosPage({super.key});
 
@@ -25,12 +30,7 @@ class _SosPageState extends State<SosPage> {
         if (progress >= 1) {
           timer.cancel();
 
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const SafePage(),
-            ),
-          );
+          _handleSafe();
         }
       });
     });
@@ -42,6 +42,48 @@ class _SosPageState extends State<SosPage> {
     setState(() {
       progress = 0.0;
     });
+  }
+
+  // ASYNC FUNCTIONS
+  Future<void> _handleSafe() async {
+    final alert = Alert(
+      id: Uuid().v4(),
+      type: "SAFE",
+      timestamp: DateTime.now().millisecondsSinceEpoch,
+      senderId: "device",
+    );
+
+    await AlertDao.insertAlert(alert);
+
+    if (!mounted) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const SafePage(),
+      ),
+    );
+  }
+
+  Future<void> _handleDanger() async {
+    final alert = Alert(
+      id: Uuid().v4(),
+      type: "DANGER",
+      timestamp: DateTime.now().millisecondsSinceEpoch,
+      senderId: "device",
+    );
+
+    // save
+    await AlertDao.insertAlert(alert);
+
+    if (!mounted) return;
+    
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const DangerPage(),
+      ),
+    );
   }
 
   @override
@@ -93,14 +135,7 @@ class _SosPageState extends State<SosPage> {
 
               /// HOLD BUTTON
               GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const DangerPage(),
-                    ),
-                  );
-                },
+                onTap: _handleDanger,
                 onTapDown: (_) => _startHolding(),
                 onTapUp: (_) => _stopHolding(),
                 onTapCancel: _stopHolding,
