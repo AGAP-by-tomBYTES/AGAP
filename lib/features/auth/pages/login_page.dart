@@ -4,6 +4,11 @@ import 'package:agap/config/app_config.dart';
 import 'package:agap/features/auth/pages/forgot_password_page.dart';
 import 'package:agap/features/auth/widgets/login_button.dart';
 import 'package:agap/features/auth/widgets/login_header.dart';
+import 'package:agap/features/responder/data/responder_dashboard_data.dart';
+import 'package:agap/features/responder/data/responder_dashboard_preview_data.dart';
+import 'package:agap/features/responder/data/responder_repository.dart';
+import 'package:agap/features/responder/pages/emergency_dashboard_page.dart';
+// import 'package:agap/features/responder/pages/normal_dashboard_page.dart';
 import 'package:agap/features/responder/pages/signup.dart';
 import 'package:agap/features/responder/widgets/auth_switch_prompt.dart';
 import 'package:agap/features/responder/widgets/signup_field.dart';
@@ -31,7 +36,9 @@ class _LoginPageState extends State<LoginPage> {
   final _scrollController = ScrollController();
   final _idController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _repository = ResponderRepository();
   bool _isPasswordHidden = true;
+  bool _isSubmitting = false;
 
   @override
   void dispose() {
@@ -123,10 +130,29 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         const SizedBox(height: 14),
                         Center(
-                          child: LoginButton(
-                            onPressed: _handleLogin,
+                          child: IgnorePointer(
+                            ignoring: _isSubmitting,
+                            child: Opacity(
+                              opacity: _isSubmitting ? 0.72 : 1,
+                              child: LoginButton(
+                                onPressed: _handleLogin,
+                              ),
+                            ),
                           ),
                         ),
+                        if (_isSubmitting) ...[
+                          const SizedBox(height: 14),
+                          const Center(
+                            child: SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.4,
+                                color: AppColors.agapOrangeDeep,
+                              ),
+                            ),
+                          ),
+                        ],
                         const SizedBox(height: 18),
                         AuthSwitchPrompt(
                           promptText: "Don’t have an account? ",
@@ -164,16 +190,106 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  void _handleLogin() {
+  Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${widget.roleLabel} login is ready for backend hookup.'),
-        behavior: SnackBarBehavior.floating,
+    if (widget.roleLabel != 'Responder') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Resident dashboard routing is not set up yet.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      final dashboardData = await _resolveResponderDashboardData();
+      if (!mounted) return;
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute<void>(
+          builder: (_) => ResponderEmergencyDashboardPage(data: dashboardData),
+          // builder: (_) => ResponderNormalDashboardPage(data: dashboardData),
+        ),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Login failed: $error'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
+  }
+
+  Future<ResponderDashboardData> _resolveResponderDashboardData() async {
+    if (!AppConfig.isSupabaseConfigured) {
+      return responderDashboardPreviewData;
+    }
+
+    final identifier = _idController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (!identifier.contains('@')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Supabase login currently uses the responder email. Opening preview dashboard instead.',
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return responderDashboardPreviewData;
+    }
+
+    await _repository.signIn(
+      email: identifier,
+      password: password,
+    );
+
+    final responder = await _repository.getCurrentResponder();
+    if (responder == null) {
+      return responderDashboardPreviewData;
+    }
+
+    return _buildDashboardData(responder);
+  }
+
+  ResponderDashboardData _buildDashboardData(Map<String, dynamic> responder) {
+    final firstName = responder['first_name'] as String? ?? '';
+    final lastName = responder['last_name'] as String? ?? '';
+    final role = responder['responder_role'] as String? ?? 'Responder';
+    final employeeId =
+        responder['employee_id_number'] as String? ?? 'Not assigned';
+    final fullName = [firstName, lastName]
+        .where((part) => part.trim().isNotEmpty)
+        .join(' ')
+        .trim();
+
+    return ResponderDashboardData(
+      profile: ResponderProfileData(
+        name: fullName.isEmpty ? 'Responder' : fullName,
+        teamAndStationLabel: '$role • $employeeId',
       ),
+      alertSummary: responderDashboardPreviewData.alertSummary,
+      teamStation: responderDashboardPreviewData.teamStation,
+      weatherAdvisory: responderDashboardPreviewData.weatherAdvisory,
+      resolvedAlerts: responderDashboardPreviewData.resolvedAlerts,
+      emergencyDispatch: responderDashboardPreviewData.emergencyDispatch,
     );
   }
 }

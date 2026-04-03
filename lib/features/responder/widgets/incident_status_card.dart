@@ -23,6 +23,7 @@ class IncidentStatusCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final config = _statusConfig(data.status);
+    final helperText = _helperText(data.status);
 
     return Container(
       padding: const EdgeInsets.all(22),
@@ -68,7 +69,7 @@ class IncidentStatusCard extends StatelessWidget {
             style: const TextStyle(
               color: Colors.black,
               fontSize: 26,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               height: 1,
             ),
           ),
@@ -116,13 +117,31 @@ class IncidentStatusCard extends StatelessWidget {
                 backgroundColor: config.buttonColor,
                 foregroundColor: Colors.white,
                 minimumSize: const Size.fromHeight(68),
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(999),
                 ),
               ),
-              child: Text(
-                data.actionLabel,
-                style: AppTypography.buttonStatus,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    data.actionLabel,
+                    style: AppTypography.buttonStatus,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    helperText,
+                    style: const TextStyle(
+                      color: Color(0xE6FFFFFF),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      height: 1.1,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
             ),
           ),
@@ -151,6 +170,17 @@ class IncidentStatusCard extends StatelessWidget {
           bannerColor: AppColors.successSoft,
           buttonColor: AppColors.success,
         );
+    }
+  }
+
+  String _helperText(IncidentProgressStatus status) {
+    switch (status) {
+      case IncidentProgressStatus.enRoute:
+        return 'Tap to mark that you have arrived on scene';
+      case IncidentProgressStatus.arrived:
+        return 'Tap to continue to the incident report';
+      case IncidentProgressStatus.resolved:
+        return 'Tap to return after closing this response';
     }
   }
 }

@@ -23,6 +23,11 @@ class EmergencyMapPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasRouteLine = _hasValidRoute(
+      data.responderPosition,
+      data.residentPosition,
+    );
+
     final mapStack = DecoratedBox(
       decoration: BoxDecoration(
         color: AppColors.mapGrass,
@@ -47,6 +52,33 @@ class EmergencyMapPanel extends StatelessWidget {
                     TileLayer(
                       tileProvider: AssetTileProvider(),
                       urlTemplate: data.offlineTileAssetTemplate!,
+                    )
+                  else
+                    TileLayer(
+                      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      userAgentPackageName: 'com.example.agap',
+                      maxZoom: 19,
+                    ),
+                  if (hasRouteLine)
+                    PolylineLayer(
+                      polylines: [
+                        Polyline(
+                          points: [
+                            LatLng(
+                              data.responderPosition.latitude,
+                              data.responderPosition.longitude,
+                            ),
+                            LatLng(
+                              data.residentPosition.latitude,
+                              data.residentPosition.longitude,
+                            ),
+                          ],
+                          strokeWidth: 5,
+                          color: AppColors.infoBlue,
+                          borderStrokeWidth: 2,
+                          borderColor: Colors.white.withValues(alpha: 0.85),
+                        ),
+                      ],
                     ),
                   MarkerLayer(
                     markers: [
@@ -79,14 +111,6 @@ class EmergencyMapPanel extends StatelessWidget {
                 ],
               ),
             ),
-            if (data.offlineTileAssetTemplate == null)
-              Positioned.fill(
-                child: IgnorePointer(
-                  child: CustomPaint(
-                    painter: _MapGridPainter(),
-                  ),
-                ),
-              ),
             if (showOpenMapButton)
               Positioned(
                 right: 14,
@@ -193,6 +217,20 @@ class EmergencyMapPanel extends StatelessWidget {
       child: mapStack,
     );
   }
+
+  bool _hasValidRoute(
+    MapCoordinate responder,
+    MapCoordinate resident,
+  ) {
+    final hasResponderLocation =
+        responder.latitude != 0 && responder.longitude != 0;
+    final hasResidentLocation =
+        resident.latitude != 0 && resident.longitude != 0;
+    final samePoint = responder.latitude == resident.latitude &&
+        responder.longitude == resident.longitude;
+
+    return hasResponderLocation && hasResidentLocation && !samePoint;
+  }
 }
 
 class _LegendRow extends StatelessWidget {
@@ -256,37 +294,4 @@ class _MapMarker extends StatelessWidget {
       ],
     );
   }
-}
-
-class _MapGridPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final gridPaint = Paint()
-      ..color = const Color(0x3394B37A)
-      ..strokeWidth = 1;
-    final roadPaint = Paint()
-      ..color = AppColors.mapRoad.withValues(alpha: 0.65)
-      ..strokeWidth = 8;
-
-    for (double x = 0; x < size.width; x += 46) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), gridPaint);
-    }
-    for (double y = 0; y < size.height; y += 38) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
-    }
-
-    canvas.drawLine(
-      Offset(size.width * 0.5, 0),
-      Offset(size.width * 0.5, size.height),
-      roadPaint,
-    );
-    canvas.drawLine(
-      Offset(0, size.height * 0.45),
-      Offset(size.width, size.height * 0.45),
-      roadPaint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
