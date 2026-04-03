@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:agap/config/app_config.dart';
 import 'package:agap/features/auth/pages/splashscreen.dart';
 import 'package:agap/theme/color.dart';
-
-bool _isSupabaseConfigured = false;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

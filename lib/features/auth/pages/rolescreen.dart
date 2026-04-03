@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-
 import 'package:agap/features/auth/widgets/role_card.dart';
 import 'package:agap/features/auth/widgets/role_screen_background.dart';
 import 'package:agap/features/auth/widgets/role_screen_footer.dart';
+import 'package:agap/features/auth/pages/login_page.dart';
 import 'package:agap/features/responder/pages/signup.dart';
 import 'package:agap/features/resident/pages/resident_signup.dart';
 import 'package:agap/theme/color.dart';
@@ -30,7 +30,11 @@ class RoleScreen extends StatelessWidget {
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute<void>(
-                          builder: (_) => const ResponderSignupPage(),
+                          builder: (_) => const LoginPage(
+                            roleLabel: 'Responder',
+                            idLabel: 'Employee ID',
+                            idHint: 'e.g. MDRRMO-23102B',
+                          ),
                         ),
                       );
                     },
@@ -61,12 +65,4 @@ class RoleScreen extends StatelessWidget {
     );
   }
 
-  void _showRoleMessage(BuildContext context, String role) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$role flow coming next.'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
 }

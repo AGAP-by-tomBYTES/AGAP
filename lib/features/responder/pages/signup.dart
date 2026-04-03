@@ -4,6 +4,7 @@ import 'package:agap/features/responder/widgets/auth_switch_prompt.dart';
 import 'package:agap/features/responder/widgets/signup_field.dart';
 import 'package:agap/features/responder/widgets/signup_step_header.dart';
 import 'package:agap/theme/color.dart';
+import 'package:agap/theme/typography.dart';
 
 class ResponderSignupPage extends StatefulWidget {
   const ResponderSignupPage({super.key});
@@ -212,10 +213,7 @@ class _ResponderSignupPageState extends State<ResponderSignupPage> {
                                 const Expanded(
                                   child: Text(
                                     'CONTINUE',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w800,
-                                    ),
+                                    style: AppTypography.buttonPrimary,
                                   ),
                                 ),
                                 Container(
