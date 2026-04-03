@@ -104,6 +104,7 @@ class NearbyService {
       alertId: alert.id,
       fromDevice: alert.senderId,
       ttl: alert.ttl,
+      type: alert.type,
     );
 
     debugPrint('Received alert ${alert.id} with TTL ${alert.ttl}');
@@ -117,6 +118,13 @@ class NearbyService {
 
   /// send alert to all connected devices
   static Future<void> sendToAll(Map<String, dynamic> alert) async {
+
+    // for testing only (DELETE FOR ACTUAL VER, see line 154)
+    if (testSendOverride != null) {
+      await testSendOverride!(alert);
+      return;
+    }
+
     final String alertId = alert['id'];
 
     if (_alreadySent.contains(alertId)) {
@@ -136,6 +144,20 @@ class NearbyService {
         debugPrint('Send failed to $endpoint: $e');
       }
     }
+  }
+
+
+  /* ======= FOR UNIT TEST ONLY ======= */
+  static void clearSentCache() => _alreadySent.clear();
+
+  static List<String> get connectedEndpoints => List.unmodifiable(_connectedEndpoints);
+  static Future<void> Function(Map<String, dynamic>)? testSendOverride;
+
+
+  static void setConnectedEndpoints(List<String> endpoints) {
+    _connectedEndpoints
+      ..clear()
+      ..addAll(endpoints);
   }
   
 }

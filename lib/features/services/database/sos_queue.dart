@@ -34,7 +34,8 @@ class SosQueueService {
         }
 
         // skip if not a SAFE/DANGER alert (CHANGE if needed)
-        if (alert['type'] != 'SAFE' && alert['type'] != 'DANGER') {
+        final String type = alert['type']?.toString() ?? '';
+        if (type != 'SAFE' && type != 'DANGER') {
           debugPrint('Skipping unknown type alert ${alert['alertId']}');
           await AlertDao.markAsForwarded(alert['alertId']); // mark to avoid looping
           continue;

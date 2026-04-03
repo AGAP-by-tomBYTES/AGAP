@@ -39,7 +39,8 @@ class DatabaseService {
         receivedAt INTEGER NOT NULL,
         fromDevice TEXT,
         ttl INTEGER NOT NULL,
-        isForwarded INTEGER DEFAULT 0
+        isForwarded INTEGER DEFAULT 0,
+        type TEXT NOT NULL
       )
     ''');
   }

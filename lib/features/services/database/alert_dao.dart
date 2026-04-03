@@ -20,7 +20,7 @@ class AlertDao {
     return result.isNotEmpty;
   }
 
-  static Future<void> insertReceivedAlert({required String alertId, required String fromDevice, int ttl = 5}) async {
+  static Future<void> insertReceivedAlert({required String alertId, required String fromDevice, required String type, int ttl = 5}) async {
     final db = await DatabaseService.database;
     await db.insert('received_alerts', {
       'alertId': alertId,
@@ -28,6 +28,7 @@ class AlertDao {
       'fromDevice': fromDevice,
       'ttl': ttl,
       'isForwarded': 0,
+      'type': type,
     });
   }
 
@@ -44,5 +45,14 @@ class AlertDao {
       whereArgs: [0],
     );
     return result;
+  }
+
+
+  /* ======= FOR UNIT TEST ONLY ======= */
+
+  static Future<void> clearAllAlerts() async {
+    final db = await DatabaseService.database;
+    await db.delete('alerts');
+    await db.delete('received_alerts');
   }
 }
