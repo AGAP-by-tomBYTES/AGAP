@@ -1,21 +1,29 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
-import 'package:agap/core/routes/screen_routes.dart';
 import 'package:agap/features/auth/user_role.dart';
-import 'package:agap/features/auth/providers/role_provider.dart'; 
 
 import 'package:agap/features/auth/widgets/role_card.dart';
 import 'package:agap/features/auth/widgets/role_screen_background.dart';
 import 'package:agap/features/auth/widgets/role_screen_footer.dart';
 import 'package:agap/theme/color.dart';
 
-class RoleScreen extends ConsumerWidget {
+class RoleScreen extends StatelessWidget {
   const RoleScreen({super.key});
 
+  void _selectRole(BuildContext context, UserRole role) {
+    debugPrint("RoleScreen: Role selected -> $role");
+    debugPrint("Navigating to /login with role");
+
+    Navigator.pushNamed(
+      context,'/login',
+      arguments: role,
+    );
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
+    debugPrint("RoleScreen: build() called");
+
     return Scaffold(
       backgroundColor: AppColors.agapOrange.withValues(alpha: 0.50),
       body: Stack(
@@ -35,23 +43,21 @@ class RoleScreen extends ConsumerWidget {
                     subtitle: '*For MDRRMO responders',
                     backgroundColor: AppColors.agapDark,
                     onTap: () {
-                      ref.read(selectedRoleProvider.notifier).state = UserRole.responder;
-                      context.go(Routes.login);
-                    }
+                      _selectRole(context, UserRole.responder);
+                    },
                   ),
 
                   const Spacer(),
                   const Spacer(),
 
-                  //RESIDENT
+                  // RESIDENT
                   RoleCard(
                     title: "I'm a Resident",
                     subtitle: '*For residents',
                     backgroundColor: AppColors.agapOrange,
                     onTap: () {
-                      ref.read(selectedRoleProvider.notifier).state = UserRole.resident;
-                      context.go(Routes.login);
-                    }
+                      _selectRole(context, UserRole.resident);
+                    },
                   ),
 
                   const Spacer(),

@@ -1,22 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'core/routes/app_route.dart';
+import 'core/routes/routes.dart';
+import 'core/routes/screen_routes.dart';
+import 'core/services/navigation_service.dart';
+
 import 'package:agap/theme/color.dart';
 
 //root widget
 //configures global theme and route
-class Agap extends ConsumerWidget {
+class Agap extends StatelessWidget {
   const Agap({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final route = ref.watch(routeProvider);
-    
-    return MaterialApp.router(
+  Widget build(BuildContext context) {
+    debugPrint("Agap: build() called");
+
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'AGAP',
-      routerConfig: route,
+      navigatorKey: NavigationService.navigatorKey,
+      initialRoute: Routes.root,
+      onGenerateRoute: (settings) {
+        debugPrint("Routing to: ${settings.name}");
+        debugPrint("Route arguments: ${settings.arguments}");
+        return generateRoute(settings);
+      },
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: AppColors.agapOrange,

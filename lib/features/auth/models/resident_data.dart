@@ -1,7 +1,7 @@
 //class for collected resident data upon signup
 
 class ResidentData {
-  //auth fields
+
   final String email;
   final String password;
 
@@ -70,9 +70,8 @@ class ResidentData {
 
   factory ResidentData.fromJson(Map<String, dynamic> json) {
     return ResidentData(
-      email: '',
-      password: '',
-
+      email: json['email'] ?? '',
+      password: json['password'] ?? '',
       firstName: json['first_name'] ?? '',
       middleName: json['middle_name'],
       lastName: json['last_name'] ?? '',

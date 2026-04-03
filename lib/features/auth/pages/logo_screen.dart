@@ -1,60 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
-import 'package:agap/features/auth/providers/auth_notifier.dart';
 import 'package:agap/features/auth/widgets/splash_logo.dart';
-import 'package:agap/core/routes/screen_routes.dart';
+import 'package:agap/features/auth/services/auth_redirect_service.dart';
 
-class LogoScreen extends ConsumerStatefulWidget {
+class LogoScreen extends StatefulWidget {
   const LogoScreen({super.key});
 
   @override
-  ConsumerState<LogoScreen> createState() => _LogoScreenState();
+  State<LogoScreen> createState() => _LogoScreenState();
 }
 
-class _LogoScreenState extends ConsumerState<LogoScreen> {
+class _LogoScreenState extends State<LogoScreen> {
+
+  final _redirectService = AuthRedirectService();
 
   @override
   void initState() {
     super.initState();
-
-    final auth = ref.read(authNotifierProvider);
-
-    if (auth.isLoggedIn) {
-      Future.microtask((){
-        if (!mounted) return;
-
-        if (!auth.isVerified) {
-          context.go(auth.isResponder ? Routes.responder : Routes.resident);
-        }
-      });
-
-      return;
-    }
-
-    Future.delayed(const Duration(seconds: 5), () {
-      if (!mounted) return;
-      context.go(Routes.start);
-    });
+    debugPrint("LogoScreen: initState called");
+    _redirectService.handleAuthRedirect(mounted: mounted);
   }
-
+  
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authNotifierProvider);
-
-    ///debugging
-    debugPrint(
-      "Splash → loading=${authState.isLoading}, "
-      "loggedIn=${authState.isLoggedIn}, "
-      "verified=${authState.isVerified}, "
-      "responder=${authState.isResponder}",
-    );
-
+    debugPrint("LogoScreen: build() called");
+    
     return const Scaffold(
-      body: Center(
-        child: SplashLogo(),
-      ),
+      body: Center(child: SplashLogo()),
     );
   }
 }
