@@ -8,6 +8,7 @@ import 'danger_page.dart';
 import 'package:uuid/uuid.dart';
 import 'package:agap/features/services/models/alert.dart';
 import 'package:agap/features/services/database/alert_dao.dart';
+import 'package:agap/features/services/device_id.dart';
 
 class SosPage extends StatefulWidget {
   const SosPage({super.key});
@@ -46,11 +47,13 @@ class _SosPageState extends State<SosPage> {
 
   // ASYNC FUNCTIONS
   Future<void> _handleSafe() async {
+    final deviceId = await DeviceIdService.getDeviceId();
+
     final alert = Alert(
       id: Uuid().v4(),
       type: "SAFE",
       timestamp: DateTime.now().millisecondsSinceEpoch,
-      senderId: "device",
+      senderId: deviceId,
     );
 
     await AlertDao.insertAlert(alert);
@@ -66,11 +69,13 @@ class _SosPageState extends State<SosPage> {
   }
 
   Future<void> _handleDanger() async {
+    final deviceId = await DeviceIdService.getDeviceId();
+
     final alert = Alert(
       id: Uuid().v4(),
       type: "DANGER",
       timestamp: DateTime.now().millisecondsSinceEpoch,
-      senderId: "device",
+      senderId: deviceId,
     );
 
     // save
