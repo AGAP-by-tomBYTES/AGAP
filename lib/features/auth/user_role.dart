@@ -1,0 +1,4 @@
+enum UserRole {
+  resident,
+  responder
+}
