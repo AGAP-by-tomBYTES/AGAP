@@ -410,36 +410,6 @@ class _LiveDispatchChip extends StatelessWidget {
   }
 }
 
-class _HeaderMetaRow extends StatelessWidget {
-  const _HeaderMetaRow({
-    required this.liveDispatchLabel,
-    required this.reportedAt,
-  });
-
-  final String liveDispatchLabel;
-  final String reportedAt;
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      crossAxisAlignment: WrapCrossAlignment.center,
-      spacing: 10,
-      runSpacing: 8,
-      children: [
-        _LiveDispatchChip(label: liveDispatchLabel),
-        Text(
-          'Reported by: $reportedAt',
-          style: const TextStyle(
-            color: Color(0xFFFFD8CB),
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _ResidentInfoCard extends StatelessWidget {
   const _ResidentInfoCard();
 
