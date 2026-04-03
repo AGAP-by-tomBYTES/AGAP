@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:agap/features/responder/data/responder_dashboard_data.dart';
 import 'package:agap/features/responder/pages/emergency_map_page.dart';
 import 'package:agap/features/responder/pages/incident_report_page.dart';
+import 'package:agap/features/responder/pages/normal_dashboard_page.dart';
+import 'package:agap/features/responder/pages/profile_page.dart';
 import 'package:agap/features/responder/widgets/dashboard_section_card.dart';
 import 'package:agap/features/responder/widgets/emergency_map_panel.dart';
 import 'package:agap/features/responder/widgets/incident_status_card.dart';
@@ -70,42 +72,139 @@ class _ResponderEmergencyDashboardPageState
 
                         return Column(
                           children: [
-                    Container(
-                      width: double.infinity,
-                      color: AppColors.agapOrangeDeep,
-                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 18),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 4),
-                          _HeaderMetaRow(
-                            liveDispatchLabel: emergencyDispatch.liveDispatchLabel,
-                            reportedAt: reportedAt,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            emergencyDispatch.dispatchTitle,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 26,
-                              fontWeight: FontWeight.w800,
+                            Container(
+                              width: double.infinity,
+                              color: AppColors.agapOrangeDeep,
+                              padding: const EdgeInsets.fromLTRB(20, 16, 20, 18),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            _LiveDispatchChip(
+                                              label: emergencyDispatch
+                                                  .liveDispatchLabel,
+                                            ),
+                                            const SizedBox(height: 12),
+                                            Text(
+                                              'Reported by: $reportedAt',
+                                              style: const TextStyle(
+                                                color: Color(0xFFFFD8CB),
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Material(
+                                        color: Colors.transparent,
+                                        child: InkWell(
+                                          onTap: () {
+                                            Navigator.of(context).push(
+                                              MaterialPageRoute<void>(
+                                                builder: (_) =>
+                                                    ResponderProfilePage(
+                                                  data: widget.data,
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                          borderRadius:
+                                              BorderRadius.circular(999),
+                                          child: const CircleAvatar(
+                                            radius: 24,
+                                            backgroundColor: Colors.white24,
+                                            child: Icon(
+                                              Icons.person,
+                                              color: Colors.white,
+                                              size: 26,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 14),
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              emergencyDispatch.dispatchTitle,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 26,
+                                                fontWeight: FontWeight.w800,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 14),
+                                      OutlinedButton.icon(
+                                        onPressed: _exitEmergencyMode,
+                                        style: OutlinedButton.styleFrom(
+                                          foregroundColor: Colors.white,
+                                          side: const BorderSide(
+                                            color: Colors.white54,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(999),
+                                          ),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 14,
+                                            vertical: 10,
+                                          ),
+                                          visualDensity: VisualDensity.compact,
+                                        ),
+                                        icon: const Icon(
+                                          Icons.close_rounded,
+                                          size: 16,
+                                        ),
+                                        label: const Text(
+                                          'EXIT',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w800,
+                                            letterSpacing: 0.4,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  if (locationSummary.trim().isNotEmpty) ...[
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      locationSummary,
+                                      style: const TextStyle(
+                                        color: Color(0xFFFFD8CB),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            locationSummary,
-                            style: const TextStyle(
-                              color: Color(0xFFFFD8CB),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    EmergencyMapPanel(
-                      data: emergencyDispatch.map,
-                      onOpenMap: () {
+                            EmergencyMapPanel(
+                              data: emergencyDispatch.map,
+                              onOpenMap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute<void>(
                             builder: (_) => EmergencyMapPage(
@@ -215,6 +314,14 @@ class _ResponderEmergencyDashboardPageState
         _currentStatus = IncidentProgressStatus.resolved;
       });
     }
+  }
+
+  void _exitEmergencyMode() {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute<void>(
+        builder: (_) => ResponderNormalDashboardPage(data: widget.data),
+      ),
+    );
   }
 
   String _buildLocationSummary(EmergencyDispatchData dispatch) {
