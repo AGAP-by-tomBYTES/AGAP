@@ -17,8 +17,8 @@ class SupabaseService {
     try {
       await dotenv.load(fileName: '.env');
     } catch (e) {
-      debugPrint(' .env not found: $e');
-      return;
+      debugPrint(".env not found: $e");
+      throw Exception("Failed to load .env file: $e");
     }
 
     //read supabase config from env vars
