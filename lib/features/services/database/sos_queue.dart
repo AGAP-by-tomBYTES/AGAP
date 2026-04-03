@@ -27,15 +27,30 @@ class SosQueueService {
       try {
         int ttl = alert['ttl'] ?? 0;
 
-        // checker
-        if (ttl <= 0) continue;
+        // checker if expired for each alert in queue
+        if (ttl <= 0) {
+          debugPrint('Skipping expired alert ${alert['alertId']}');
+          continue;
+        }
+
+        // skip if not a SAFE/DANGER alert (CHANGE if needed)
+        if (alert['type'] != 'SAFE' && alert['type'] != 'DANGER') {
+          debugPrint('Skipping unknown type alert ${alert['alertId']}');
+          await AlertDao.markAsForwarded(alert['alertId']); // mark to avoid looping
+          continue;
+        }
 
         // decrease ttl
-        final updatedAlert = Map<String, dynamic>.from(alert);
-        updatedAlert['ttl'] = ttl - 1;
+        final Map<String, dynamic> forwardPayload = {
+        'id': alert['alertId'],
+        'type': alert['type'],            // SAFE / DANGER
+        'timestamp': alert['timestamp'],
+        'senderId': alert['fromDevice'],  // original sender
+        'ttl': ttl - 1,                      // decrement TTL for next hop
+      };
 
         debugPrint('Forwarding alert ${alert['alertId']} from ${alert['fromDevice']}');
-        await NearbyService.sendToAll(alert);
+        await NearbyService.sendToAll(forwardPayload);
         await AlertDao.markAsForwarded(alert['alertId']);
       } catch (e) {
         debugPrint('Failed to forward alert ${alert['alertId']}: $e');

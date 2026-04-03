@@ -38,6 +38,7 @@ class DatabaseService {
         alertId TEXT NOT NULL,
         receivedAt INTEGER NOT NULL,
         fromDevice TEXT,
+        ttl INTEGER NOT NULL,
         isForwarded INTEGER DEFAULT 0
       )
     ''');

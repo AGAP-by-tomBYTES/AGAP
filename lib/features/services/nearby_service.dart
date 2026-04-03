@@ -103,16 +103,29 @@ class NearbyService {
     await AlertDao.insertReceivedAlert(
       alertId: alert.id,
       fromDevice: alert.senderId,
+      ttl: alert.ttl,
     );
 
     debugPrint('Received alert ${alert.id} with TTL ${alert.ttl}');
   } catch (e) {
     debugPrint('Payload error: $e');
+    return;
   }
   }
 
+  static final Set<String> _alreadySent = {}; // track per session
+
   /// send alert to all connected devices
   static Future<void> sendToAll(Map<String, dynamic> alert) async {
+    final String alertId = alert['id'];
+
+    if (_alreadySent.contains(alertId)) {
+      debugPrint('Alert $alertId already sent in this session, skipping.');
+      return;
+    }
+
+    _alreadySent.add(alertId);
+
     final String jsonString = jsonEncode(alert);
     final bytes = utf8.encode(jsonString);
 

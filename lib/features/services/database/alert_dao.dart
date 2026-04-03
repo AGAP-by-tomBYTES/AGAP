@@ -20,12 +20,13 @@ class AlertDao {
     return result.isNotEmpty;
   }
 
-  static Future<void> insertReceivedAlert({required String alertId, required String fromDevice}) async {
+  static Future<void> insertReceivedAlert({required String alertId, required String fromDevice, int ttl = 5}) async {
     final db = await DatabaseService.database;
     await db.insert('received_alerts', {
       'alertId': alertId,
       'receivedAt': DateTime.now().millisecondsSinceEpoch,
       'fromDevice': fromDevice,
+      'ttl': ttl,
       'isForwarded': 0,
     });
   }
