@@ -17,7 +17,7 @@ final routeProvider = Provider<GoRouter>((ref) {
   final auth = ref.watch(authNotifierProvider);
 
   return GoRouter(
-    initialLocation: Routes.splash,
+    initialLocation: Routes.logo,
 
     redirect: (context, state) {
       final isLoggedIn = auth.isLoggedIn;
@@ -26,7 +26,7 @@ final routeProvider = Provider<GoRouter>((ref) {
 
       final location = state.matchedLocation;
 
-      final splash = Routes.splash;
+      final logo = Routes.logo;
       final start = Routes.start;
       final login = Routes.login;
       final role = Routes.role;
@@ -36,6 +36,8 @@ final routeProvider = Provider<GoRouter>((ref) {
       final responderHome = Routes.responder;
 
       final isAuthRoute = location == login || location == signup;
+
+      if (location == logo) return null;
 
       if (!isLoggedIn) {
         if (location != start && location != login && location != signup && location != role) {
@@ -49,10 +51,6 @@ final routeProvider = Provider<GoRouter>((ref) {
           return verify;
         }
         return null;
-      }
-
-      if (location == splash) {
-        return isResponder ? responderHome : residentHome;
       }
 
       if (!isResponder && location == responderHome) {
@@ -71,7 +69,7 @@ final routeProvider = Provider<GoRouter>((ref) {
     },
 
     routes: [
-      GoRoute(path: Routes.splash, builder: (_, _) => const SplashPage()),
+      GoRoute(path: Routes.logo, builder: (_, _) => const LogoScreen()),
       GoRoute(path: Routes.start, builder: (_, _) => const StartPage()),
       GoRoute(path: Routes.role, builder: (_, _) => const RoleScreen()),
       GoRoute(path: Routes.login, builder: (_, _) => const LoginPage()),

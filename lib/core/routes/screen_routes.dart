@@ -1,6 +1,6 @@
 class Routes {
   //core
-  static const splash = '/';
+  static const logo = '/';
   static const start = '/start';
   static const role = '/role';
 

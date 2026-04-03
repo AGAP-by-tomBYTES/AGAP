@@ -24,7 +24,7 @@ class ResponderHomePage extends ConsumerWidget {
 
               if (!context.mounted) return;
 
-              context.go(Routes.splash);
+              context.go(Routes.logo);
             },
           ),
         ],

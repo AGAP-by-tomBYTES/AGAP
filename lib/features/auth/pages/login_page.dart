@@ -195,7 +195,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
       if (!mounted) return;
 
-      context.go(Routes.splash);
+      final auth = ref.read(authNotifierProvider);
+
+      context.go(auth.isResponder ? Routes.responder : Routes.resident);
 
     } catch (e) {
       final message = _mapError(e.toString());
