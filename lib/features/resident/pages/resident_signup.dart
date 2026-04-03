@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:agap/features/responder/pages/signup_verification.dart';
+import 'package:agap/features/resident/data/resident_signup_data.dart';
+import 'package:agap/features/resident/pages/resident_signup_location.dart';
 import 'package:agap/features/responder/widgets/auth_switch_prompt.dart';
 import 'package:agap/features/responder/widgets/signup_field.dart';
 import 'package:agap/features/responder/widgets/signup_step_header.dart';
+import 'package:agap/features/resident/widgets/birthdate_format.dart';
 import 'package:agap/theme/color.dart';
-import 'package:agap/theme/typography.dart';
+import 'package:flutter/services.dart';
 
-class ResponderSignupPage extends StatefulWidget {
-  const ResponderSignupPage({super.key});
+class ResidentSignupPage extends StatefulWidget {
+  const ResidentSignupPage({super.key});
 
   @override
-  State<ResponderSignupPage> createState() => _ResponderSignupPageState();
+  State<ResidentSignupPage> createState() => _ResidentSignupPageState();
 }
 
-class _ResponderSignupPageState extends State<ResponderSignupPage> {
+class _ResidentSignupPageState extends State<ResidentSignupPage> {
   final _formKey = GlobalKey<FormState>();
   final _scrollController = ScrollController();
+
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _middleNameController = TextEditingController();
@@ -24,6 +27,9 @@ class _ResponderSignupPageState extends State<ResponderSignupPage> {
   final _phoneController = TextEditingController(text: '+63');
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _birthdateController = TextEditingController();
+  String? _selectedGender;
+
   bool _isHiddenPassword = true;
   bool _isHiddenConfirmPassword = true;
 
@@ -38,6 +44,7 @@ class _ResponderSignupPageState extends State<ResponderSignupPage> {
     _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _birthdateController.dispose();
     super.dispose();
   }
 
@@ -49,11 +56,11 @@ class _ResponderSignupPageState extends State<ResponderSignupPage> {
         child: Column(
           children: [
             const SignupStepHeader(
-              stepLabel: 'STEP 1 OF 2',
+              stepLabel: 'STEP 1 OF 5',
               sectionLabel: 'ACCOUNT',
               title: 'Create your account',
               description:
-                  'Your details help us verify you as an authorized responder.',
+                  'Your details help us reach you faster in an emergency.',
             ),
             Expanded(
               child: Scrollbar(
@@ -68,12 +75,13 @@ class _ResponderSignupPageState extends State<ResponderSignupPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        /// FIRST + LAST NAME
                         Row(
                           children: [
                             Expanded(
                               child: SignupField(
                                 label: 'First name',
-                                hint: 'e.g. John',
+                                hint: 'e.g. Juan',
                                 controller: _firstNameController,
                                 validator: (v) => v == null || v.trim().isEmpty
                                     ? 'Required'
@@ -93,13 +101,16 @@ class _ResponderSignupPageState extends State<ResponderSignupPage> {
                             ),
                           ],
                         ),
+
                         const SizedBox(height: 14),
+
+                        /// MIDDLE + SUFFIX
                         Row(
                           children: [
                             Expanded(
                               child: SignupField(
                                 label: 'Middle name',
-                                hint: 'e.g. Villanueva',
+                                hint: 'e.g. Santos',
                                 controller: _middleNameController,
                               ),
                             ),
@@ -113,10 +124,45 @@ class _ResponderSignupPageState extends State<ResponderSignupPage> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 14),
+
+                      const SizedBox(height: 14),
+                      SignupField(
+                      label: 'Birthdate',
+                      hint: "MM/DD/YYYY", 
+                      controller: _birthdateController,
+                      keyboardType: TextInputType.number,
+                      validator: _validateBirthdate,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly, 
+                      BirthdateInputFormatter(),],
+                      ),
+
+                      const SizedBox(height: 14),
+
+                      const Text(
+                        'Gender',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      Wrap(
+                        spacing: 8,
+                        children: [
+                          _genderChip('Male'),
+                          _genderChip('Female'),
+                          _genderChip('Non-binary'),
+                          _genderChip('Prefer not to say'),
+                        ],
+                      ),
+         
+                      const SizedBox(height: 14),
+                        /// EMAIL
                         SignupField(
                           label: 'Email',
-                          hint: 'e.g. juan@mdrrmo.gov.ph',
+                          hint: 'e.g. juan@gmail.com',
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
                           validator: (v) {
@@ -129,19 +175,25 @@ class _ResponderSignupPageState extends State<ResponderSignupPage> {
                             return null;
                           },
                         ),
+
                         const SizedBox(height: 14),
+
+                        /// PHONE
                         SignupField(
                           label: 'Phone number',
                           controller: _phoneController,
                           keyboardType: TextInputType.phone,
                           validator: (v) {
-                            if (v == null || v.trim().length < 12) {
+                            if (v == null || v.trim().length != 13 || !v.startsWith('+63')) {
                               return 'Enter a valid phone number';
                             }
                             return null;
                           },
                         ),
+
                         const SizedBox(height: 14),
+
+                        /// PASSWORD
                         SignupField(
                           label: 'Password',
                           controller: _passwordController,
@@ -165,7 +217,10 @@ class _ResponderSignupPageState extends State<ResponderSignupPage> {
                             ),
                           ),
                         ),
+
                         const SizedBox(height: 14),
+
+                        /// CONFIRM PASSWORD
                         SignupField(
                           label: 'Confirm Password',
                           controller: _confirmPasswordController,
@@ -192,7 +247,10 @@ class _ResponderSignupPageState extends State<ResponderSignupPage> {
                             ),
                           ),
                         ),
+
                         const SizedBox(height: 22),
+
+                        /// CONTINUE BUTTON
                         SizedBox(
                           width: double.infinity,
                           child: FilledButton(
@@ -201,8 +259,6 @@ class _ResponderSignupPageState extends State<ResponderSignupPage> {
                               backgroundColor: AppColors.agapOrangeDeep,
                               foregroundColor: Colors.white,
                               minimumSize: const Size.fromHeight(54),
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 14),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(999),
                               ),
@@ -213,7 +269,10 @@ class _ResponderSignupPageState extends State<ResponderSignupPage> {
                                 const Expanded(
                                   child: Text(
                                     'CONTINUE',
-                                    style: AppTypography.buttonPrimary,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w800,
+                                    ),
                                   ),
                                 ),
                                 Container(
@@ -234,7 +293,10 @@ class _ResponderSignupPageState extends State<ResponderSignupPage> {
                             ),
                           ),
                         ),
+
                         const SizedBox(height: 12),
+
+                        /// LOGIN SWITCH
                         AuthSwitchPrompt(
                           promptText: 'Already have an account? ',
                           actionText: 'Log In',
@@ -255,21 +317,81 @@ class _ResponderSignupPageState extends State<ResponderSignupPage> {
   }
 
   void _handleContinue() {
-    if (_formKey.currentState!.validate()) {
-      Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => ResponderSignupVerificationPage(
-            email: _emailController.text.trim(),
-            password: _passwordController.text.trim(),
-            firstName: _firstNameController.text.trim(),
-            middleName: _middleNameController.text.trim().isEmpty
-                ? null
-                : _middleNameController.text.trim(),
-            lastName: _lastNameController.text.trim(),
-            phone: _phoneController.text.trim(),
-          ),
+    if (!_formKey.currentState!.validate()) return;
+
+    if (_selectedGender == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select a gender'),
+          behavior: SnackBarBehavior.floating,
         ),
       );
+      return;
     }
+
+    final data = ResidentSignupData(
+      email: _emailController.text.trim(),
+      password: _passwordController.text.trim(),
+      firstName: _firstNameController.text.trim(),
+      middleName: _middleNameController.text.trim().isEmpty
+          ? null
+          : _middleNameController.text.trim(),
+      lastName: _lastNameController.text.trim(),
+      suffix: _suffixController.text.trim().isEmpty
+          ? null
+          : _suffixController.text.trim(),
+      phone: _phoneController.text.trim(), 
+      birthdate: _birthdateController.text.trim(),
+      gender: _selectedGender!,
+
+    )
+      ..birthdate = _birthdateController.text.trim()
+      ..gender = _selectedGender!;
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ResidentSignupLocationPage(data: data),
+      ),
+    );
+  }
+
+  String? _validateBirthdate(String? value) {
+    if (value == null || value.isEmpty) return 'Required';
+
+    final parts = value.split('/');
+    if (parts.length != 3) return 'Invalid format';
+
+    final month = int.tryParse(parts[0]);
+    final day = int.tryParse(parts[1]);
+    final year = int.tryParse(parts[2]);
+
+    if (month == null || month < 1 || month > 12) {
+      return 'Invalid month';
+    }
+
+    if (day == null || day < 1 || day > 31) {
+      return 'Invalid day';
+    }
+
+    if (year == null || year < 1900 || year > DateTime.now().year) {
+      return 'Invalid year';
+    }
+
+    return null;
+  }
+
+    Widget _genderChip(String label) {
+    final isSelected = _selectedGender == label;
+
+    return ChoiceChip(
+      label: Text(label, style: const TextStyle(fontSize: 12)),
+      selected: isSelected,
+      onSelected: (_) {
+        setState(() {
+          _selectedGender = label;
+        });
+      },
+    );
   }
 }
+

@@ -7,7 +7,6 @@ import 'package:agap/features/responder/widgets/verification_upload_card.dart';
 import 'package:agap/theme/color.dart';
 import 'package:agap/features/responder/data/responder_repository.dart';
 import 'package:agap/features/responder/pages/responder_test_page.dart';
-import 'package:agap/theme/typography.dart';
 
 class ResponderSignupVerificationPage extends StatefulWidget {
   const ResponderSignupVerificationPage({
@@ -260,7 +259,10 @@ class _ResponderSignupVerificationPageState
                                         const Expanded(
                                           child: Text(
                                             'CREATE PROFILE',
-                                            style: AppTypography.buttonPrimary,
+                                            style: TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w800,
+                                            ),
                                           ),
                                         ),
                                         Container(
@@ -300,18 +302,6 @@ class _ResponderSignupVerificationPageState
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please fill in all fields.'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return;
-    }
-
-    if (!AppConfig.isSupabaseConfigured) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Supabase is not configured. Add SUPABASE_URL and SUPABASE_ANON_KEY to .env first.',
-          ),
           behavior: SnackBarBehavior.floating,
         ),
       );

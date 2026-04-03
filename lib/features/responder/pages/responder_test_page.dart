@@ -1,10 +1,5 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:agap/features/responder/data/responder_dashboard_data.dart';
-import 'package:agap/features/responder/data/responder_dashboard_preview_data.dart';
 import 'package:agap/features/responder/data/responder_repository.dart';
-import 'package:agap/features/responder/pages/normal_dashboard_page.dart';
 
 class ResponderTestPage extends StatefulWidget {
   const ResponderTestPage({super.key});
@@ -17,7 +12,6 @@ class _ResponderTestPageState extends State<ResponderTestPage> {
   final _repository = ResponderRepository();
   Map<String, dynamic>? _responder;
   bool _loading = true;
-  Timer? _redirectTimer;
 
   @override
   void initState() {
@@ -27,61 +21,16 @@ class _ResponderTestPageState extends State<ResponderTestPage> {
 
   Future<void> _loadResponder() async {
     final data = await _repository.getCurrentResponder();
-    if (!mounted) return;
-
     setState(() {
       _responder = data;
       _loading = false;
     });
-
-    if (data != null) {
-      final dashboardData = _buildDashboardData(data);
-      _redirectTimer = Timer(const Duration(seconds: 3), () {
-        if (!mounted) return;
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute<void>(
-            builder: (_) => ResponderNormalDashboardPage(data: dashboardData),
-          ),
-        );
-      });
-    }
   }
 
   Future<void> _signOut() async {
-    _redirectTimer?.cancel();
     await _repository.signOut();
     if (!mounted) return;
     Navigator.of(context).popUntil((route) => route.isFirst);
-  }
-
-  @override
-  void dispose() {
-    _redirectTimer?.cancel();
-    super.dispose();
-  }
-
-  ResponderDashboardData _buildDashboardData(Map<String, dynamic> responder) {
-    final firstName = responder['first_name'] as String? ?? '';
-    final lastName = responder['last_name'] as String? ?? '';
-    final role = responder['responder_role'] as String? ?? 'Responder';
-    final employeeId =
-        responder['employee_id_number'] as String? ?? 'Not assigned';
-    final fullName = [firstName, lastName]
-        .where((part) => part.trim().isNotEmpty)
-        .join(' ')
-        .trim();
-
-    return ResponderDashboardData(
-      profile: ResponderProfileData(
-        name: fullName.isEmpty ? 'Responder' : fullName,
-        teamAndStationLabel: '$role • $employeeId',
-      ),
-      alertSummary: responderDashboardPreviewData.alertSummary,
-      teamStation: responderDashboardPreviewData.teamStation,
-      weatherAdvisory: responderDashboardPreviewData.weatherAdvisory,
-      resolvedAlerts: responderDashboardPreviewData.resolvedAlerts,
-      emergencyDispatch: responderDashboardPreviewData.emergencyDispatch,
-    );
   }
 
   @override
@@ -103,10 +52,6 @@ class _ResponderTestPageState extends State<ResponderTestPage> {
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Redirecting to dashboard in a few seconds...',
                       ),
                       const SizedBox(height: 24),
                       _row('Name',

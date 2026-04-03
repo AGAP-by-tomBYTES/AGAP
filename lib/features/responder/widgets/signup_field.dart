@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:agap/theme/color.dart';
+import 'package:flutter/services.dart';
 
 class SignupField extends StatelessWidget {
   const SignupField({
@@ -11,7 +12,8 @@ class SignupField extends StatelessWidget {
     this.obscureText = false,
     this.keyboardType,
     this.suffixIcon,
-    this.validator,
+    this.validator, 
+    this.inputFormatters,
   });
 
   final String label;
@@ -21,6 +23,7 @@ class SignupField extends StatelessWidget {
   final TextInputType? keyboardType;
   final Widget? suffixIcon;
   final String? Function(String?)? validator;
+  final List<TextInputFormatter>? inputFormatters;
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +44,7 @@ class SignupField extends StatelessWidget {
           controller: controller,
           obscureText: obscureText,
           keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
           style: const TextStyle(
             color: AppColors.textPrimary,
             fontSize: 16,
