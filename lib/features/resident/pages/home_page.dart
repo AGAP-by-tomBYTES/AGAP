@@ -1,101 +1,111 @@
 import 'package:flutter/material.dart';
+import 'package:agap/features/resident/pages/send_sos.dart';
 
-import 'package:agap/features/auth/services/auth_service.dart';
+import 'package:agap/theme/color.dart';
 
-class ResidentHomePage extends StatefulWidget {
+class ResidentHomePage extends StatelessWidget {
   const ResidentHomePage({super.key});
 
   @override
-  State<ResidentHomePage> createState() => _ResidentHomePageState();
-}
-
-class _ResidentHomePageState extends State<ResidentHomePage> {
-  String? displayName;
-
-  @override
-  void initState() {
-    super.initState();
-    debugPrint("ResidentHomePage: initState called");
-    _loadUser();
-  }
-
-  void _loadUser() {
-    debugPrint("ResidentHomePage: Loading user");
-
-    final auth = AuthService();
-    final user = auth.currentUser;
-
-    if (user != null) {
-      debugPrint("ResidentHomePage: User found -> ${user.email}");
-
-      setState(() {
-        // Temporary display (since no DB yet)
-        displayName = user.email;
-      });
-    } else {
-      debugPrint("ResidentHomePage: No user found");
-
-      setState(() {
-        displayName = "Resident";
-      });
-    }
-  }
-
-  Future<void> _logout() async {
-    debugPrint("ResidentHomePage: Logout pressed");
-
-    try {
-      final auth = AuthService();
-      await auth.signOut();
-
-      debugPrint("ResidentHomePage: Sign out successful");
-
-      if (!mounted) {
-        debugPrint("ResidentHomePage: Not mounted, abort navigation");
-        return;
-      }
-
-      debugPrint("ResidentHomePage: Navigating to /");
-      Navigator.pushNamedAndRemoveUntil(
-        context,
-        '/',
-        (route) => false,
-      );
-
-    } catch (e) {
-      debugPrint("ResidentHomePage: Logout error -> $e");
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    debugPrint("ResidentHomePage: build() called");
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Resident Home"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: _logout,
-          ),
-        ],
-      ),
-
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // GREETING
-            Text(
-              "Welcome, ${displayName ?? "Resident"}",
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              /// HEADER
+              const Text(
+                'Emergency Dashboard',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
-            ),
-          ],
+
+              const SizedBox(height: 6),
+
+              Text(
+                'Stay safe. Help is one tap away.',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textMuted,
+                ),
+              ),
+
+              const SizedBox(height: 40),
+
+              /// SOS BUTTON (CENTERPIECE)
+              Expanded(
+                child: Center(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const SosPage(),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      width: 220,
+                      height: 220,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.agapOrangeDeep.withValues(alpha: 0.1),
+                      ),
+                      child: Center(
+                        child: Container(
+                          width: 180,
+                          height: 180,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.agapOrangeDeep,
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'SOS',
+                              style: TextStyle(
+                                fontSize: 42,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              /// OPTIONAL INFO CARD
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.overlayWhiteStrong,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.info_outline),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Tap SOS only during emergencies. Your location will be sent to responders.',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
