@@ -1,40 +1,54 @@
+import 'package:agap/core/routes/screen_routes.dart';
 import 'package:flutter/material.dart';
+import 'dart:async';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive/hive.dart';
+import 'package:go_router/go_router.dart';
 
-import 'package:agap/features/auth/pages/forgot_password_page.dart';
+import 'package:agap/features/auth/providers/auth_provider.dart';
+import 'package:agap/features/auth/providers/auth_notifier.dart';
+
+import 'package:agap/features/auth/widgets/signup_field.dart';
 import 'package:agap/features/auth/widgets/login_button.dart';
 import 'package:agap/features/auth/widgets/login_header.dart';
-import 'package:agap/features/responder/pages/signup.dart';
-import 'package:agap/features/responder/widgets/auth_switch_prompt.dart';
-import 'package:agap/features/responder/widgets/signup_field.dart';
-import 'package:agap/theme/color.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({
-    super.key,
-    required this.roleLabel,
-    required this.idLabel,
-    required this.idHint,
-  });
-
-  final String roleLabel;
-  final String idLabel;
-  final String idHint;
+class LoginPage extends ConsumerStatefulWidget {
+  const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends ConsumerState<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final _scrollController = ScrollController();
-  final _idController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+
   bool _isPasswordHidden = true;
+  bool _isLoading = false;
+  bool _rememberMe = false;
+
+  final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRememberedUser();
+  }
+
+  void _loadRememberedUser() {
+    final box = Hive.box("app_cache");
+    final email = box.get("remember_email");
+
+    if (email != null) {
+      _emailController.text = email;
+      _rememberMe = true;
+    }
+  }
 
   @override
   void dispose() {
-    _scrollController.dispose();
-    _idController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -46,101 +60,106 @@ class _LoginPageState extends State<LoginPage> {
       body: SafeArea(
         child: Column(
           children: [
-            LoginHeader(roleLabel: widget.roleLabel),
+            const LoginHeader(roleLabel: "Login"),
+
             Expanded(
-              child: Scrollbar(
-                controller: _scrollController,
-                thumbVisibility: true,
-                radius: const Radius.circular(999),
-                child: SingleChildScrollView(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.fromLTRB(32, 28, 32, 28),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SignupField(
-                          label: widget.idLabel,
-                          hint: widget.idHint,
-                          controller: _idController,
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Required';
-                            }
-                            return null;
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(32),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      /// EMAIL
+                      SignupField(
+                        label: "Email",
+                        hint: "Enter your email",
+                        controller: _emailController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Email is required";
+                          }
+                          if (!emailRegex.hasMatch(value)) {
+                            return "Invalid email format";
+                          }
+                          return null;
+                        },
+                      ),
+
+                      const SizedBox(height: 18),
+
+                      /// PASSWORD
+                      SignupField(
+                        label: "Password",
+                        controller: _passwordController,
+                        obscureText: _isPasswordHidden,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Password is required";
+                          }
+                          return null;
+                        },
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              _isPasswordHidden = !_isPasswordHidden;
+                            });
                           },
+                          icon: Icon(
+                            _isPasswordHidden
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                          ),
                         ),
-                        const SizedBox(height: 18),
-                        SignupField(
-                          label: 'Password',
-                          controller: _passwordController,
-                          obscureText: _isPasswordHidden,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Required';
-                            }
-                            return null;
-                          },
-                          suffixIcon: IconButton(
-                            onPressed: () {
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      /// REMEMBER ME
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: _rememberMe,
+                            onChanged: (val) {
                               setState(() {
-                                _isPasswordHidden = !_isPasswordHidden;
+                                _rememberMe = val ?? false;
                               });
                             },
-                            icon: Icon(
-                              _isPasswordHidden
-                                  ? Icons.visibility_off_outlined
-                                  : Icons.visibility_outlined,
-                              color: AppColors.textMuted,
-                            ),
                           ),
-                        ),
-                        const SizedBox(height: 10),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute<void>(
-                                  builder: (_) => ForgotPasswordPage(
-                                    roleLabel: widget.roleLabel,
-                                    idLabel: widget.idLabel,
-                                    idHint: widget.idHint,
-                                  ),
-                                ),
-                              );
+                          const Text("Remember Me"),
+                        ],
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      /// LOGIN BUTTON
+                      LoginButton(
+                        isLoading: _isLoading,
+                        onPressed:
+                            _isLoading ? null : () => _handleLogin(),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      /// SIGNUP LINK
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text("Don't have an account? "),
+                          GestureDetector(
+                            onTap: () {
+                              context.go(Routes.signup);
                             },
                             child: const Text(
-                              'Forgot Password?',
+                              "Sign up",
                               style: TextStyle(
-                                color: AppColors.agapOrangeDeep,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.orange,
                               ),
                             ),
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        Center(
-                          child: LoginButton(
-                            onPressed: _handleLogin,
-                          ),
-                        ),
-                        const SizedBox(height: 18),
-                        AuthSwitchPrompt(
-                          promptText: "Don’t have an account? ",
-                          actionText: 'Sign Up',
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute<void>(
-                                builder: (_) => const ResponderSignupPage(),
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
+                          )
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -151,16 +170,50 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  void _handleLogin() {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+  Future<void> _handleLogin() async {
+    if (!_formKey.currentState!.validate()) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${widget.roleLabel} login is ready for backend hookup.'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    setState(() => _isLoading = true);
+
+    try {
+      final authService = ref.read(authServiceProvider);
+
+      await authService.signIn(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      /// REMEMBER ME
+      final box = Hive.box("app_cache");
+      if (_rememberMe) {
+        box.put("remember_email", _emailController.text.trim());
+      } else {
+        box.delete("remember_email");
+      }
+
+      await ref.read(authNotifierProvider.notifier).refresh();
+
+      if (!mounted) return;
+
+      context.go(Routes.splash);
+
+    } catch (e) {
+      final message = _mapError(e.toString());
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  String _mapError(String error) {
+    if (error.contains("Invalid login credentials")) {
+      return "Wrong email or password";
+    } else if (error.contains("Email not confirmed")) {
+      return "Please verify your email first";
+    }
+    return "Login failed. Try again.";
   }
 }
