@@ -24,7 +24,7 @@ class AppTypography {
   );
 
   static const buttonStatus = TextStyle(
-    fontSize: 26,
+    fontSize: 20,
     fontWeight: FontWeight.w900,
     height: 1,
     letterSpacing: 0.2,

@@ -48,43 +48,34 @@ const responderDashboardPreviewData = ResponderDashboardData(
   ],
   emergencyDispatch: EmergencyDispatchData(
     dispatchTitle: 'Emergency Mode',
-    locationSummary: 'Brgy. Igtuba, Miagao  •  0.8 km away',
+    locationSummary: '',
     map: EmergencyMapData(
       openMapLabel: 'Open map',
       residentLegendLabel: 'Resident',
       responderLegendLabel: 'You',
-      distanceLabel: '1.2 km away',
+      distanceLabel: '',
       initialCenter: MapCoordinate(
-        latitude: 10.6408,
-        longitude: 122.2358,
+        latitude: 10.6448,
+        longitude: 122.2352,
       ),
       residentPosition: MapCoordinate(
-        latitude: 10.6408,
-        longitude: 122.2358,
+        latitude: 0,
+        longitude: 0,
       ),
       responderPosition: MapCoordinate(
-        latitude: 10.6377,
-        longitude: 122.2311,
+        latitude: 0,
+        longitude: 0,
       ),
     ),
     resident: ResidentIncidentData(
       category: 'MEDICAL',
-      name: 'Rosa Manalo',
-      reportedAt: 'Mar-26-26 • 2:14 PM',
-      gender: 'F',
-      age: '67 years old',
-      address: 'Brgy. Igtuba, Miagao',
+      name: '',
+      reportedAt: '',
+      gender: '',
+      age: '',
+      address: '',
       detailsTitle: 'MEDICAL INFO',
-      details: [
-        ResidentDetailData(
-          label: 'Allergies',
-          value: 'Penicillin',
-        ),
-        ResidentDetailData(
-          label: 'Modification',
-          value: 'Losartan',
-        ),
-      ],
+      details: [],
     ),
     incidentStatus: IncidentStatusData(
       status: IncidentProgressStatus.enRoute,
