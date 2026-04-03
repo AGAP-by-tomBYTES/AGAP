@@ -18,7 +18,7 @@ const responderDashboardPreviewData = ResponderDashboardData(
   weatherAdvisory: WeatherAdvisoryData(
     title: 'Weather advisory',
     message:
-        'PAGASA: Moderate rain expected in Cebu City. Signal 1 in effect until 6PM.',
+        'PAGASA advisory details will appear here once the live weather report is connected.',
   ),
   resolvedAlerts: [
     ResolvedAlertData(
