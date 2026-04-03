@@ -34,4 +34,14 @@ class AlertDao {
     final db = await DatabaseService.database;
     await db.update('received_alerts', {'isForwarded': 1}, where: 'alertId = ?', whereArgs: [alertId]);
   }
+
+  static Future<List<Map<String, dynamic>>> getUnforwardedReceivedAlerts() async {
+    final db = await DatabaseService.database;
+    final result = await db.query(
+      'received_alerts',
+      where: 'isForwarded = ?',
+      whereArgs: [0],
+    );
+    return result;
+  }
 }
