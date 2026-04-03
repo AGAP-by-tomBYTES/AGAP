@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:agap/theme/color.dart';
+import 'package:agap/theme/typography.dart';
 
 class GetStartedButton extends StatelessWidget {
   const GetStartedButton({
@@ -44,16 +45,11 @@ class GetStartedButton extends StatelessWidget {
                 size: 24,
               ),
             ),
-            const Expanded(
+            Expanded(
               child: Center(
                 child: Text(
                   "Let's Get Started",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                  ),
+                  style: AppTypography.buttonHero.copyWith(color: Colors.white),
                 ),
               ),
             ),

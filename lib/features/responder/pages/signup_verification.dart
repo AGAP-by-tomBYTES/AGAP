@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:agap/config/app_config.dart';
 import 'package:agap/features/responder/widgets/signup_step_header.dart';
 import 'package:agap/features/responder/widgets/verification_upload_card.dart';
 import 'package:agap/theme/color.dart';
@@ -152,7 +153,7 @@ class _ResponderSignupVerificationPageState
                       ),
                       const SizedBox(height: 8),
                       DropdownButtonFormField<String>(
-                        value: _selectedRole,
+                        initialValue: _selectedRole,
                         items: _roleOptions
                             .map(
                               (role) => DropdownMenuItem<String>(
@@ -223,10 +224,7 @@ class _ResponderSignupVerificationPageState
                               ),
                               child: const Text(
                                 'BACK',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w800,
-                                ),
+                                style: AppTypography.buttonPrimary,
                               ),
                             ),
                           ),
