@@ -54,6 +54,7 @@ class _SosPageState extends State<SosPage> {
       type: "SAFE",
       timestamp: DateTime.now().millisecondsSinceEpoch,
       senderId: deviceId,
+      ttl: 5,
     );
 
     await AlertDao.insertAlert(alert);
@@ -76,6 +77,7 @@ class _SosPageState extends State<SosPage> {
       type: "DANGER",
       timestamp: DateTime.now().millisecondsSinceEpoch,
       senderId: deviceId,
+      ttl: 5,
     );
 
     // save

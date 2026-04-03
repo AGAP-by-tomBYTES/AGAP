@@ -18,6 +18,7 @@ void main() {
       type: "SAFE",
       timestamp: DateTime.now().millisecondsSinceEpoch,
       senderId: "test_device",
+      ttl: 5,
     );
 
     await AlertDao.insertAlert(alert);

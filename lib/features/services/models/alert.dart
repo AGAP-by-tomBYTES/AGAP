@@ -3,12 +3,14 @@ class Alert {
   final String type;      // safe or danger
   final int timestamp;
   final String senderId;
+  final int ttl;
 
   Alert({
     required this.id,
     required this.type,
     required this.timestamp,
     required this.senderId,
+    required this.ttl,
   });
 
   Map<String, dynamic> toJson() => {
@@ -16,6 +18,7 @@ class Alert {
         'type': type,
         'timestamp': timestamp,
         'senderId': senderId,
+        'ttl': ttl,
       };
 
   factory Alert.fromJson(Map<String, dynamic> json) {
@@ -24,6 +27,7 @@ class Alert {
       type: json['type'],
       timestamp: json['timestamp'],
       senderId: json['senderId'],
+      ttl: json['ttl'] ?? 5,
     );
   }
 }
