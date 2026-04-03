@@ -1,10 +1,10 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:agap/config/app_config.dart';
 import 'package:agap/features/responder/widgets/signup_step_header.dart';
 import 'package:agap/features/responder/widgets/verification_upload_card.dart';
 import 'package:agap/theme/color.dart';
+import 'package:agap/theme/typography.dart';
 import 'package:agap/features/responder/data/responder_repository.dart';
 import 'package:agap/features/responder/pages/responder_test_page.dart';
 

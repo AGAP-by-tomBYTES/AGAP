@@ -37,7 +37,7 @@ Future<void> _initializeSupabaseIfConfigured() async {
     url: supabaseUrl,
     anonKey: supabaseAnonKey,
   );
-  _isSupabaseConfigured = true;
+  AppConfig.isSupabaseConfigured = true;
   debugPrint('Supabase initialized successfully.');
 }
 

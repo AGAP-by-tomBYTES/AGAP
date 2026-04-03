@@ -53,7 +53,7 @@ class ResidentDashboardPage extends StatelessWidget {
                       height: 220,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: AppColors.agapOrangeDeep.withOpacity(0.1),
+                        color: AppColors.agapOrangeDeep.withValues(alpha: 0.1),
                       ),
                       child: Center(
                         child: Container(
