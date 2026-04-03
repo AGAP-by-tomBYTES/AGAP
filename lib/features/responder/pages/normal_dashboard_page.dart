@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:agap/features/responder/data/responder_dashboard_data.dart';
+import 'package:agap/features/responder/pages/profile_page.dart';
 import 'package:agap/features/responder/widgets/dashboard_section_card.dart';
-import 'package:agap/features/responder/widgets/dashboard_stat_tile.dart';
-import 'package:agap/features/responder/widgets/recent_resolved_item.dart';
 import 'package:agap/theme/color.dart';
 
 class ResponderNormalDashboardPage extends StatelessWidget {
@@ -28,10 +27,20 @@ class ResponderNormalDashboardPage extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(18, 16, 18, 22),
                 child: Row(
                   children: [
-                    const CircleAvatar(
-                      radius: 22,
-                      backgroundColor: Colors.white24,
-                      child: Icon(Icons.person, color: Colors.white),
+                    InkWell(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => ResponderProfilePage(data: data),
+                          ),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(999),
+                      child: const CircleAvatar(
+                        radius: 22,
+                        backgroundColor: Colors.white24,
+                        child: Icon(Icons.person, color: Colors.white),
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Column(
@@ -76,32 +85,14 @@ class ResponderNormalDashboardPage extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          Row(
-                            children: [
-                              DashboardStatTile(
-                                value: data.alertSummary.activeCount.toString(),
-                                label: 'Active',
-                                valueColor: AppColors.agapOrange,
-                                borderColor: const Color(0xFFFF8B73),
-                                backgroundColor: const Color(0xFFFFF7F4),
-                              ),
-                              const SizedBox(width: 12),
-                              DashboardStatTile(
-                                value: data.alertSummary.totalCount.toString(),
-                                label: 'Total',
-                                valueColor: Colors.black,
-                                borderColor: const Color(0xFFE2E2E2),
-                                backgroundColor: AppColors.lightCard,
-                              ),
-                              const SizedBox(width: 12),
-                              DashboardStatTile(
-                                value: data.alertSummary.resolvedCount.toString(),
-                                label: 'Resolved',
-                                valueColor: AppColors.success,
-                                borderColor: const Color(0xFF93D8B1),
-                                backgroundColor: const Color(0xFFF1FBF5),
-                              ),
-                            ],
+                          const Text(
+                            'Alert totals will appear here once live responder dashboard data is connected.',
+                            style: TextStyle(
+                              color: AppColors.textMuted,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                              height: 1.35,
+                            ),
                           ),
                         ],
                       ),
@@ -147,12 +138,13 @@ class ResponderNormalDashboardPage extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 18),
-                          ...data.resolvedAlerts.map(
-                            (alert) => RecentResolvedItem(
-                              name: alert.name,
-                              type: alert.type,
-                              location: alert.location,
-                              time: alert.time,
+                          const Text(
+                            'Recent resolved incidents will appear here once responder activity is connected.',
+                            style: TextStyle(
+                              color: AppColors.textMuted,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                              height: 1.35,
                             ),
                           ),
                         ],

@@ -27,6 +27,7 @@ class EmergencyMapPanel extends StatelessWidget {
       data.responderPosition,
       data.residentPosition,
     );
+    final hasDistanceLabel = data.distanceLabel.trim().isNotEmpty;
 
     final mapStack = DecoratedBox(
       decoration: BoxDecoration(
@@ -183,25 +184,26 @@ class EmergencyMapPanel extends StatelessWidget {
                 ),
               ),
             ),
-            Positioned(
-              right: 16,
-              bottom: 26,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Text(
-                  data.distanceLabel,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
+            if (hasDistanceLabel)
+              Positioned(
+                right: 16,
+                bottom: 26,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Text(
+                    data.distanceLabel,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ),
-            ),
           ],
         ),
       ),
