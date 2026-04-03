@@ -53,7 +53,7 @@ class DangerPage extends StatelessWidget {
                       border: Border.all(color: dangerColor, width: 4),
                       boxShadow: [
                         BoxShadow(
-                          color: dangerColor.withOpacity(0.25),
+                          color: dangerColor.withValues(alpha: 0.25),
                           blurRadius: 20,
                           spreadRadius: 2,
                         ),

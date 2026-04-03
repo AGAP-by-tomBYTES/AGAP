@@ -3,7 +3,6 @@ import 'package:agap/features/auth/widgets/role_card.dart';
 import 'package:agap/features/auth/widgets/role_screen_background.dart';
 import 'package:agap/features/auth/widgets/role_screen_footer.dart';
 import 'package:agap/features/auth/pages/login_page.dart';
-import 'package:agap/features/responder/pages/signup.dart';
 import 'package:agap/features/resident/pages/resident_signup.dart';
 import 'package:agap/theme/color.dart';
 
