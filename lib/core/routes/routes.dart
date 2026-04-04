@@ -13,7 +13,10 @@ import 'package:agap/features/auth/pages/resident_signup_location.dart';
 import 'package:agap/features/auth/models/resident_data.dart';
 
 import 'package:agap/features/resident/pages/home_page.dart';
-import 'package:agap/features/responder/pages/home_page.dart';
+// import 'package:agap/features/responder/pages/home_page.dart';
+import 'package:agap/features/responder/pages/responder_signup_page.dart';
+import 'package:agap/features/responder/pages/emergency_dashboard_page.dart';
+import 'package:agap/features/responder/data/responder_dashboard_data.dart';
 
 
 import 'package:agap/features/auth/user_role.dart';
@@ -40,6 +43,18 @@ Route<dynamic> generateRoute(RouteSettings settings) {
           role: settings.arguments as UserRole,
         ),
       );
+
+    case Routes.responderSignupPage:
+      if (settings.arguments is! UserRole) {
+        return _error("UserRole required for Signup");
+      }
+
+      return MaterialPageRoute(
+        builder: (_) => ResponderSignupPage(
+          role: settings.arguments as UserRole,
+        ),
+      );
+
 
     case Routes.residentSignupPage1:
       if (settings.arguments is! UserRole) {
@@ -76,10 +91,16 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       if (!RouteGuard.isLoggedIn()) {
         return _error("Unauthorized");
       }
-
+      
+      final data = settings.arguments as ResponderDashboardData;
+      
       return MaterialPageRoute(
-        builder: (_) => const ResponderHomePage(),
+        builder: (_) => ResponderEmergencyDashboardPage(data: data),
       );
+
+      // return MaterialPageRoute(
+      //   builder: (_) => const ResponderHomePage(),
+      // );
 
     default:
       return _error("Unknown route: ${settings.name}");

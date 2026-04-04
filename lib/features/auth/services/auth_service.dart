@@ -116,7 +116,7 @@ class AuthService {
   //   }
   // }
 
-  Future<void> signUp(ResidentData data) async {
+  Future<void> signUpResident(ResidentData data) async {
   final authResponse = await client.auth.signUp(
     email: data.email,
     password: data.password,

@@ -11,6 +11,9 @@ import 'package:agap/features/auth/user_role.dart';
 import 'package:agap/core/services/navigation_service.dart';
 import 'package:agap/core/routes/screen_routes.dart';
 import 'package:agap/core/services/supabase_service.dart';
+import 'package:agap/features/responder/data/responder_service.dart';
+import 'package:agap/features/responder/data/responder_dashboard_data.dart';
+import 'package:agap/features/responder/data/responder_dashboard_preview_data.dart';
 
 
 //login page
@@ -201,7 +204,12 @@ class _LoginPageState extends State<LoginPage> {
                             );
                             return;
                           }
-                          NavigationService.pushReplacement(Routes.residentSignupPage1, arguments: widget.role,);
+
+                          if (widget.role == UserRole.resident) {
+                            NavigationService.pushReplacement(Routes.residentSignupPage1, arguments: widget.role);
+                          } else {
+                            NavigationService.pushReplacement(Routes.responderSignupPage, arguments: widget.role);
+                          }
                         }
                       ),
                     ],
@@ -259,7 +267,20 @@ class _LoginPageState extends State<LoginPage> {
         NavigationService.pushReplacement(Routes.residentDashboard);
       } else {
         debugPrint("LoginPage: Navigating to /responder");
-        NavigationService.pushReplacement(Routes.responderDashboard);
+
+        final responderService = ResponderService();
+        
+        ResponderDashboardData data;
+        
+        try {
+          data = await responderService.getDashboardData();
+        } catch (e) {
+          debugPrint("Fallback to preview data: $e");
+          data = responderDashboardPreviewData;
+        }
+
+        if (!mounted) return;
+        NavigationService.pushReplacement(Routes.responderDashboard,arguments: data);
       }
 
     } catch (e) {

@@ -1,3 +1,5 @@
+//barrel file for pages
+
 export 'logo_screen.dart';
 export 'start_page.dart';
 export 'rolescreen.dart';

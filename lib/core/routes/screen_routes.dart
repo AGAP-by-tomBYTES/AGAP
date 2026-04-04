@@ -17,5 +17,6 @@ class Routes {
   static const residentDashboard = '/resident/dashboard';
 
   //responder
+  static const responderSignupPage = '/responder/signup';
   static const responderDashboard = '/responder/dashboard';
 }

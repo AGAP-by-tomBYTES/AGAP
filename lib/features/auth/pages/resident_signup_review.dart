@@ -132,7 +132,7 @@ class ResidentSignupReviewPage extends StatelessWidget {
                   Expanded(
                     child: FilledButton(
                       onPressed: () async {
-                        await repo.signUp(data);
+                        await repo.signUpResident(data);
                         if (!context.mounted) return;
 
                         Navigator.pushReplacement(
