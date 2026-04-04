@@ -262,28 +262,27 @@ class _LoginPageState extends State<LoginPage> {
     );
 
     final responder = await _repository.getCurrentResponder();
-    if (responder == null) {
-      return responderDashboardPreviewData;
-    }
-
-    return _buildDashboardData(responder);
+      if (responder == null) {
+        throw Exception('Responder profile not found. Contact your administrator.');
+      }
+      return _buildDashboardData(responder);
   }
 
-  ResponderDashboardData _buildDashboardData(Map<String, dynamic> responder) {
-    final firstName = responder['first_name'] as String? ?? '';
-    final lastName = responder['last_name'] as String? ?? '';
-    final role = responder['responder_role'] as String? ?? 'Responder';
-    final employeeId =
-        responder['employee_id_number'] as String? ?? 'Not assigned';
-    final fullName = [firstName, lastName]
-        .where((part) => part.trim().isNotEmpty)
-        .join(' ')
-        .trim();
+    ResponderDashboardData _buildDashboardData(Map<String, dynamic> responder) {
+    final firstName  = responder['first_name']  as String? ?? '';
+    final middleName = responder['middle_name'] as String? ?? '';
+    final lastName   = responder['last_name']   as String? ?? '';
+
+    final fullName = [
+      firstName,
+      if (middleName.trim().isNotEmpty) middleName,
+      lastName,
+    ].where((part) => part.trim().isNotEmpty).join(' ').trim();
 
     return ResponderDashboardData(
       profile: ResponderProfileData(
         name: fullName.isEmpty ? 'Responder' : fullName,
-        teamAndStationLabel: '$role • $employeeId',
+        teamAndStationLabel: 'Team Alpha – Miagao Station', // hardcoded for now
       ),
       alertSummary: responderDashboardPreviewData.alertSummary,
       teamStation: responderDashboardPreviewData.teamStation,

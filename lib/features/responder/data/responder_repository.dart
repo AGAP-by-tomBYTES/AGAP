@@ -1,6 +1,9 @@
 import 'dart:typed_data';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:agap/features/responder/data/responder_dashboard_data.dart';
+import 'package:agap/features/responder/data/responder_dashboard_preview_data.dart';
+
 class ResponderRepository {
   SupabaseClient get _client => Supabase.instance.client;
 
@@ -72,7 +75,44 @@ class ResponderRepository {
         .single();
   }
 
+  Future<ResponderDashboardData> getDashboardData() async {
+    final row = await getCurrentResponder();
+    if (row == null) throw Exception('No responder profile found.');
+
+    final firstName  = row['first_name']  as String? ?? '';
+    final middleName = row['middle_name'] as String? ?? '';
+    final lastName   = row['last_name']   as String? ?? '';
+
+    final fullName = [
+      firstName,
+      if (middleName.trim().isNotEmpty) middleName,
+      lastName,
+    ].join(' ').trim();
+
+    return ResponderDashboardData(
+      profile: ResponderProfileData(
+        name: fullName,
+        teamAndStationLabel: 'Team Alpha – Miagao Station',
+      ),
+      alertSummary: const AlertSummaryData(
+        activeCount: 0,
+        totalCount: 0,
+        resolvedCount: 0,
+      ),
+      teamStation: const TeamStationData(
+        team: 'Team Alpha',
+        station: 'Station 3 - Banwa, Miagao',
+      ),
+      weatherAdvisory: const WeatherAdvisoryData(
+        title: 'Weather advisory',
+        message: 'PAGASA advisory details will appear here once the live weather report is connected.',
+      ),
+      resolvedAlerts: const [],
+      emergencyDispatch: responderDashboardPreviewData.emergencyDispatch,
+    );
+  }
+
   Future<void> signOut() async {
-    await _client.auth.signOut();
+    await _client.auth.signOut(); 
   }
 }
