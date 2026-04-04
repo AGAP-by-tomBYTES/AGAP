@@ -4,6 +4,8 @@ import 'package:agap/theme/color.dart';
 import 'package:agap/features/resident/pages/res_dashboard.dart';
 import 'package:agap/features/resident/pages/emergency_hotlines.dart';
 import 'package:agap/features/resident/pages/send_sos.dart';
+import 'package:agap/features/resident/widgets/birthdate_format.dart'; 
+import 'package:flutter/services.dart';
 
 class FamilyPage extends StatefulWidget {
   const FamilyPage({super.key});
@@ -14,11 +16,11 @@ class FamilyPage extends StatefulWidget {
 
 class _FamilyPageState extends State<FamilyPage> {
   final int _selectedIndex = 3;
-  
-  // Track the unique ID of the next of kin
-  String? nextOfKinId = "Juan Dela Cruz"; // Example: "Juan Dela Cruz" is the next of kin
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  final List<Map<String, String>> familyMembers = [
+  String? nextOfKinId = "Juan Dela Cruz";
+
+  List<Map<String, String>> familyMembers = [
     {
       "firstName": "Maria",
       "lastName": "Clara",
@@ -43,10 +45,43 @@ class _FamilyPageState extends State<FamilyPage> {
     },
   ];
 
+  void _showDeleteMemberDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Remove Family Member"),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: familyMembers.length,
+            itemBuilder: (context, index) {
+              final member = familyMembers[index];
+              final fullName = "${member['firstName']} ${member['lastName']}";
+              return ListTile(
+                leading: const Icon(Icons.person_remove, color: Colors.red),
+                title: Text(fullName),
+                subtitle: Text(member['relation'] ?? ""),
+                onTap: () {
+                  setState(() {
+                    if (nextOfKinId == fullName) nextOfKinId = null;
+                    familyMembers.removeAt(index);
+                  });
+                  Navigator.pop(context);
+                },
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
   void _openMemberSheet({Map<String, String>? member}) {
     final bool isEditing = member != null;
-    final String memberId = isEditing ? "${member['firstName']} ${member['lastName']}" : "";
-    
+    final int? indexToUpdate = isEditing ? familyMembers.indexOf(member) : null;
+    final String oldMemberId = isEditing ? "${member['firstName']} ${member['lastName']}" : "";
+
     final fNameCtrl = TextEditingController(text: member?['firstName'] ?? '');
     final lNameCtrl = TextEditingController(text: member?['lastName'] ?? '');
     final bDateCtrl = TextEditingController(text: member?['birthdate'] ?? '');
@@ -57,7 +92,7 @@ class _FamilyPageState extends State<FamilyPage> {
     final allergCtrl = TextEditingController(text: member?['allergies'] ?? '');
     final medCtrl = TextEditingController(text: member?['medications'] ?? '');
 
-    bool isNextOfKin = nextOfKinId == memberId;
+    bool isNextOfKin = nextOfKinId == oldMemberId;
 
     showModalBottomSheet(
       context: context,
@@ -74,81 +109,120 @@ class _FamilyPageState extends State<FamilyPage> {
               bottom: MediaQuery.of(context).viewInsets.bottom + 20,
               top: 20, left: 24, right: 24,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(isEditing ? "Edit Family Member" : "Add Family Member", 
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Expanded(child: _buildTextField("First Name", controller: fNameCtrl)),
-                    const SizedBox(width: 12),
-                    Expanded(child: _buildTextField("Last Name", controller: lNameCtrl)),
-                  ],
-                ),
-                const SizedBox(height: 15),
-                // Next of Kin Toggle
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: isNextOfKin ? AppColors.agapCoral.withValues(alpha: 0.1) : Colors.grey.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(isEditing ? "Edit Family Member" : "Add Family Member", 
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 20),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("Set as Next of Kin", style: TextStyle(fontWeight: FontWeight.bold)),
-                      Switch(
-                        value: isNextOfKin,
-                        activeThumbColor: AppColors.agapCoral,
-                        onChanged: (val) {
-                          setSheetState(() => isNextOfKin = val);
-                        },
+                      Expanded(
+                        child: _buildTextField(
+                          "First Name", 
+                          controller: fNameCtrl,
+                          validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildTextField(
+                          "Last Name", 
+                          controller: lNameCtrl,
+                          validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+                        ),
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 15),
-                _buildTextField("Birthdate", hint: "MM/DD/YYYY", controller: bDateCtrl),
-                const SizedBox(height: 15),
-                _buildTextField("Relationship", hint: "e.g., Father, Mother, Sibling", controller: relCtrl),
-                const SizedBox(height: 15),
-                _buildTextField("Phone Number", hint: "e.g., 0912 345 6789", controller: phoneCtrl),
-                const SizedBox(height: 15),
-                _buildTextField("Current Conditions", hint: "e.g., Diabetes, Hypertension", controller: condCtrl),
-                const SizedBox(height: 15),
-                _buildTextField(" Past Medical History", hint: "e.g., Heart Disease, Asthma", controller: histCtrl),
-                const SizedBox(height: 15),
-                _buildTextField("Allergies", hint: "e.g., Penicillin, Shellfish", controller: allergCtrl),  
-                const SizedBox(height: 15),
-                _buildTextField("Medications", hint: "e.g., Aspirin, Insulin", controller: medCtrl),
-                const SizedBox(height: 30),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.agapCoral,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  const SizedBox(height: 15),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: isNextOfKin ? AppColors.agapCoral.withValues(alpha: 0.1) : Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    onPressed: () {
-                      if (isNextOfKin) {
-                        setState(() {
-                          nextOfKinId = "${fNameCtrl.text} ${lNameCtrl.text}";
-                        });
-                      } else if (nextOfKinId == memberId) {
-                        setState(() {
-                          nextOfKinId = null;
-                        });
-                      }
-                      Navigator.pop(context);
-                    },
-                    child: Text(isEditing ? "Update Member Information" : "Save Member Information", 
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text("Set as Next of Kin", style: TextStyle(fontWeight: FontWeight.bold)),
+                        Switch(
+                          value: isNextOfKin,
+                          activeThumbColor: AppColors.agapCoral,
+                          onChanged: isNextOfKin ? null : (val) {
+                            setSheetState(() => isNextOfKin = val);
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 15),
+                  _buildTextField(
+                    "Birthdate", 
+                    hint: "MM/DD/YYYY", 
+                    controller: bDateCtrl, 
+                    isBirthdate: true,
+                    validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+                  ),
+                  const SizedBox(height: 15),
+                  _buildTextField("Relationship", hint: "e.g., Father, Mother, Sibling", controller: relCtrl),
+                  const SizedBox(height: 15),
+                  _buildTextField("Phone Number", hint: "e.g., 0912 345 6789", controller: phoneCtrl),
+                  const SizedBox(height: 15),
+                  _buildTextField("Current Conditions", hint: "e.g., Diabetes, Hypertension", controller: condCtrl),
+                  const SizedBox(height: 15),
+                  _buildTextField("Past Medical History", hint: "e.g., Heart Disease, Asthma", controller: histCtrl),
+                  const SizedBox(height: 15),
+                  _buildTextField("Allergies", hint: "e.g., Penicillin, Shellfish", controller: allergCtrl),  
+                  const SizedBox(height: 15),
+                  _buildTextField("Medications", hint: "e.g., Aspirin, Insulin", controller: medCtrl),
+                  const SizedBox(height: 30),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.agapCoral,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          Map<String, String> updatedMember = {
+                            "firstName": fNameCtrl.text,
+                            "lastName": lNameCtrl.text,
+                            "relation": relCtrl.text,
+                            "phone": phoneCtrl.text,
+                            "birthdate": bDateCtrl.text,
+                            "conditions": condCtrl.text,
+                            "history": histCtrl.text,
+                            "allergies": allergCtrl.text,
+                            "medications": medCtrl.text,
+                          };
+
+                          setState(() {
+                            if (isEditing && indexToUpdate != null) {
+                              familyMembers[indexToUpdate] = updatedMember;
+                            } else {
+                              familyMembers.add(updatedMember);
+                            }
+
+                            if (isNextOfKin) {
+                              nextOfKinId = "${fNameCtrl.text} ${lNameCtrl.text}";
+                            } else if (nextOfKinId == oldMemberId) {
+                              nextOfKinId = null;
+                            }
+                          });
+                          Navigator.pop(context);
+                        }
+                      },
+                      child: Text(isEditing ? "Update Member Information" : "Save Member Information", 
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -213,24 +287,43 @@ class _FamilyPageState extends State<FamilyPage> {
                   const SizedBox(height: 24),
                   _buildSectionLabel("HOUSEHOLD MEMBERS"),
                   
-                  GestureDetector(
-                    onTap: () => _openMemberSheet(),
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.grey.shade300),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => _openMemberSheet(),
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade50,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.grey.shade300),
+                            ),
+                            child: const Row(
+                              children: [
+                                Icon(Icons.add_circle_outline, color: AppColors.agapCoral),
+                                SizedBox(width: 12),
+                                Text("Add member", 
+                                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
-                      child: const Row(
-                        children: [
-                          Icon(Icons.add_circle_outline, color: AppColors.agapCoral),
-                          SizedBox(width: 12),
-                          Text("Add new family member", 
-                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
-                        ],
+                      const SizedBox(width: 12),
+                      GestureDetector(
+                        onTap: _showDeleteMemberDialog,
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: AppColors.agapCoral.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppColors.agapCoral),
+                          ),
+                          child: const Icon(Icons.delete_outline, color: Colors.red),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
 
                   const SizedBox(height: 20),
@@ -339,22 +432,33 @@ class _FamilyPageState extends State<FamilyPage> {
     );
   }
 
-  Widget _buildTextField(String label, {String? hint, TextEditingController? controller}) {
+  Widget _buildTextField(String label, {
+    String? hint, 
+    TextEditingController? controller, 
+    bool isBirthdate = false,
+    String? Function(String?)? validator,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
         const SizedBox(height: 6),
-        TextField(
+        TextFormField(
           controller: controller,
+          validator: validator,
+          keyboardType: isBirthdate ? TextInputType.number : TextInputType.text,
+          inputFormatters: isBirthdate ? [BirthdateInputFormatter()] : null,
           decoration: InputDecoration(
             hintText: hint,
             filled: true,
-            fillColor: Colors.grey.shade50,
+            fillColor: AppColors.lightCard,
+            errorStyle: const TextStyle(height: 0.8),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
             enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
             focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.agapCoral, width: 1)),
+            errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.red, width: 1)),
+            focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.red, width: 1)),
           ),
         ),
       ],
