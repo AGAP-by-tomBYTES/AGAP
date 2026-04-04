@@ -4,9 +4,17 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:agap/config/app_config.dart';
 import 'package:agap/features/auth/pages/splashscreen.dart';
 import 'package:agap/theme/color.dart';
+import 'package:agap/features/services/nearby_service.dart';
+import 'package:agap/features/services/database/sos_queue.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // initialize nearby for p2p connections
+  await NearbyService.init();
+  // start SOS queue processor
+  SosQueueService.startQueueProcessor();
+
   await _initializeSupabaseIfConfigured();
   runApp(const MyApp());
 }
