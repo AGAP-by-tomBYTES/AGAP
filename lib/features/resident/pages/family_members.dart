@@ -14,6 +14,9 @@ class FamilyPage extends StatefulWidget {
 
 class _FamilyPageState extends State<FamilyPage> {
   final int _selectedIndex = 3;
+  
+  // Track the unique ID of the next of kin
+  String? nextOfKinId = "Juan Dela Cruz"; // Example: "Juan Dela Cruz" is the next of kin
 
   final List<Map<String, String>> familyMembers = [
     {
@@ -42,6 +45,7 @@ class _FamilyPageState extends State<FamilyPage> {
 
   void _openMemberSheet({Map<String, String>? member}) {
     final bool isEditing = member != null;
+    final String memberId = isEditing ? "${member['firstName']} ${member['lastName']}" : "";
     
     final fNameCtrl = TextEditingController(text: member?['firstName'] ?? '');
     final lNameCtrl = TextEditingController(text: member?['lastName'] ?? '');
@@ -53,62 +57,99 @@ class _FamilyPageState extends State<FamilyPage> {
     final allergCtrl = TextEditingController(text: member?['allergies'] ?? '');
     final medCtrl = TextEditingController(text: member?['medications'] ?? '');
 
+    bool isNextOfKin = nextOfKinId == memberId;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.85,
-        maxChildSize: 0.95,
-        expand: false,
-        builder: (context, scrollController) => SingleChildScrollView(
-          controller: scrollController,
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-            top: 20, left: 24, right: 24,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(isEditing ? "Edit Family Member" : "Add Family Member", 
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(child: _buildTextField("First Name", controller: fNameCtrl)),
-                  const SizedBox(width: 12),
-                  Expanded(child: _buildTextField("Last Name", controller: lNameCtrl)),
-                ],
-              ),
-              const SizedBox(height: 15),
-              _buildTextField("Birthdate", hint: "MM/DD/YYYY", controller: bDateCtrl),
-              const SizedBox(height: 15),
-              _buildTextField("Relationship", controller: relCtrl),
-              const SizedBox(height: 15),
-              _buildTextField("Phone Number", controller: phoneCtrl),
-              const SizedBox(height: 15),
-              _buildTextField("Current Conditions", controller: condCtrl),
-              const SizedBox(height: 15),
-              _buildTextField(" Past Medical History", controller: histCtrl),
-              const SizedBox(height: 15),
-              _buildTextField("Allergies", controller: allergCtrl),  
-              const SizedBox(height: 15),
-              _buildTextField("Medications", controller: medCtrl),
-              const SizedBox(height: 30),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.agapCoral,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  onPressed: () => Navigator.pop(context),
-                  child: Text(isEditing ? "Update Member" : "Save Member", 
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setSheetState) => DraggableScrollableSheet(
+          initialChildSize: 0.85,
+          maxChildSize: 0.95,
+          expand: false,
+          builder: (context, scrollController) => SingleChildScrollView(
+            controller: scrollController,
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+              top: 20, left: 24, right: 24,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(isEditing ? "Edit Family Member" : "Add Family Member", 
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(child: _buildTextField("First Name", controller: fNameCtrl)),
+                    const SizedBox(width: 12),
+                    Expanded(child: _buildTextField("Last Name", controller: lNameCtrl)),
+                  ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 15),
+                // Next of Kin Toggle
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isNextOfKin ? AppColors.agapCoral.withValues(alpha: 0.1) : Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text("Set as Next of Kin", style: TextStyle(fontWeight: FontWeight.bold)),
+                      Switch(
+                        value: isNextOfKin,
+                        activeThumbColor: AppColors.agapCoral,
+                        onChanged: (val) {
+                          setSheetState(() => isNextOfKin = val);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 15),
+                _buildTextField("Birthdate", hint: "MM/DD/YYYY", controller: bDateCtrl),
+                const SizedBox(height: 15),
+                _buildTextField("Relationship", hint: "e.g., Father, Mother, Sibling", controller: relCtrl),
+                const SizedBox(height: 15),
+                _buildTextField("Phone Number", hint: "e.g., 0912 345 6789", controller: phoneCtrl),
+                const SizedBox(height: 15),
+                _buildTextField("Current Conditions", hint: "e.g., Diabetes, Hypertension", controller: condCtrl),
+                const SizedBox(height: 15),
+                _buildTextField(" Past Medical History", hint: "e.g., Heart Disease, Asthma", controller: histCtrl),
+                const SizedBox(height: 15),
+                _buildTextField("Allergies", hint: "e.g., Penicillin, Shellfish", controller: allergCtrl),  
+                const SizedBox(height: 15),
+                _buildTextField("Medications", hint: "e.g., Aspirin, Insulin", controller: medCtrl),
+                const SizedBox(height: 30),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.agapCoral,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: () {
+                      if (isNextOfKin) {
+                        setState(() {
+                          nextOfKinId = "${fNameCtrl.text} ${lNameCtrl.text}";
+                        });
+                      } else if (nextOfKinId == memberId) {
+                        setState(() {
+                          nextOfKinId = null;
+                        });
+                      }
+                      Navigator.pop(context);
+                    },
+                    child: Text(isEditing ? "Update Member Information" : "Save Member Information", 
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -206,13 +247,15 @@ class _FamilyPageState extends State<FamilyPage> {
   }
 
   Widget _buildMemberTile(Map<String, String> member) {
+    bool isKin = nextOfKinId == "${member['firstName']} ${member['lastName']}";
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: isKin ? AppColors.agapCoral : Colors.grey.shade200, width: isKin ? 1.5 : 1),
         boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10)],
       ),
       child: Column(
@@ -229,8 +272,20 @@ class _FamilyPageState extends State<FamilyPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("${member['firstName']} ${member['lastName']}", 
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+                    Row(
+                      children: [
+                        Text("${member['firstName']} ${member['lastName']}", 
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+                        if (isKin) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(color: AppColors.agapCoral, borderRadius: BorderRadius.circular(6)),
+                            child: const Text("NEXT OF KIN", style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)),
+                          )
+                        ]
+                      ],
+                    ),
                     Text(member['relation']!, style: const TextStyle(color: Colors.grey, fontSize: 13)),
                   ],
                 ),
