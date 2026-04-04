@@ -7,7 +7,7 @@ import 'package:agap/features/auth/pages/logo_screen.dart';
 import 'package:agap/features/auth/pages/start_page.dart';
 import 'package:agap/features/auth/pages/login_page.dart';
 import 'package:agap/features/auth/pages/rolescreen.dart';
-import 'package:agap/features/auth/pages/signup_page.dart';
+import 'package:agap/features/auth/pages/resident_signup_page.dart';
 import 'package:agap/features/auth/pages/resident_signup_location.dart';
 
 import 'package:agap/features/auth/models/resident_data.dart';
