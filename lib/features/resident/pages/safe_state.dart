@@ -20,7 +20,7 @@ class SafePage extends StatelessWidget {
       bottomNavigationBar: _buildBottomBar(context),
       body: Column(
         children: [
-          /// 🛰️ TOP GREEN BAR (Custom Status Bar)
+          
           Container(
             width: double.infinity,
             padding: const EdgeInsets.fromLTRB(16, 30, 16, 12), // Added top padding for notch
@@ -141,7 +141,7 @@ class SafePage extends StatelessWidget {
     );
   }
 
-  /// 🔻 SHARED BOTTOM NAV BAR
+  ///  SHARED BOTTOM NAV BAR
   Widget _buildBottomBar(BuildContext context) {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 20),

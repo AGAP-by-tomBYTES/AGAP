@@ -56,7 +56,6 @@ class _SosPageState extends State<SosPage> {
       bottomNavigationBar: _buildBottomBar(),
       body: Column(
         children: [
-          /// 🛰️ CUSTOM STATUS BAR
           Container(
             width: double.infinity,
             padding: const EdgeInsets.fromLTRB(12, 30, 12, 12), 
@@ -83,7 +82,6 @@ class _SosPageState extends State<SosPage> {
             ),
           ),
 
-          /// 🎯 MAIN CONTENT AREA
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -115,7 +113,6 @@ class _SosPageState extends State<SosPage> {
 
                   const SizedBox(height: 170), 
 
-                  /// PROGRESS RING & BUTTON
                   GestureDetector(
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DangerPage())),
                     onTapDown: (_) => _startHolding(),

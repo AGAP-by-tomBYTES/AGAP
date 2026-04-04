@@ -44,7 +44,6 @@ class DangerPage extends StatelessWidget {
 
                   const SizedBox(height: 30),
 
-                  /// CIRCLE WITH ICON
                   Container(
                     width: 170,
                     height: 170,
@@ -97,7 +96,6 @@ class DangerPage extends StatelessWidget {
             ),
           ),
 
-          /// BOTTOM BUTTON (THUMB FRIENDLY)
           Padding(
             padding: const EdgeInsets.all(24),
             child: SizedBox(

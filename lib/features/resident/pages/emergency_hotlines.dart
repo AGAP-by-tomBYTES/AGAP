@@ -13,7 +13,7 @@ class EmergencyHotlinesPage extends StatefulWidget {
 }
 
 class _EmergencyHotlinesPageState extends State<EmergencyHotlinesPage> {
-  int _selectedIndex = 1; // 'Call' is active
+  int _selectedIndex = 1; 
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +24,7 @@ class _EmergencyHotlinesPageState extends State<EmergencyHotlinesPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// 🏝️ ISLAND HEADER (Now inside SingleChildScrollView so it scrolls)
+ 
             Container(
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(24, 50, 24, 25),
@@ -65,7 +65,6 @@ class _EmergencyHotlinesPageState extends State<EmergencyHotlinesPage> {
               ),
             ),
 
-            /// 📜 CONTENT AREA
             Padding(
               padding: const EdgeInsets.all(24),
               child: Column(
@@ -114,7 +113,6 @@ class _EmergencyHotlinesPageState extends State<EmergencyHotlinesPage> {
     );
   }
 
-  /// 🔻 UI HELPERS
   Widget _buildContactCard(String title, String sub,
       {required String landline, String? globe, String? smart, String? email, required Color color}) {
     return Container(

@@ -24,7 +24,7 @@ class _ResidentDashboardPageState extends State<ResidentDashboardPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// 🏝️ ISLAND HEADER (Slightly shortened for better fit)
+        
             Container(
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(24, 50, 24, 25),
@@ -106,7 +106,6 @@ class _ResidentDashboardPageState extends State<ResidentDashboardPage> {
 
                   const SizedBox(height: 24),
 
-                  /// 📞 CLICKABLE QUICK ACTIONS
                   _buildSectionLabel("QUICK ACTIONS"),
                   GestureDetector(
                     onTap: () {
@@ -179,7 +178,6 @@ class _ResidentDashboardPageState extends State<ResidentDashboardPage> {
     );
   }
 
-  /// 🔻 UI HELPERS
   Widget _buildSectionLabel(String label) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
