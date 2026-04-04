@@ -176,7 +176,7 @@ class _EmergencyHotlinesPageState extends State<EmergencyHotlinesPage> {
                 context,
                 MaterialPageRoute(
                     builder: (_) => const ResidentDashboardPage()),
-              );;
+              );
           }),
           _navItem(Icons.call, 1, () {}),
           _buildCenterSosButton(),
