@@ -29,6 +29,8 @@ class DatabaseService {
         type TEXT NOT NULL,
         timestamp INTEGER NOT NULL,
         senderId TEXT NOT NULL
+        ttl INTEGER DEFAULT 5,
+        uploaded INTEGER DEFAULT 0
       )
     ''');
     
@@ -40,6 +42,7 @@ class DatabaseService {
         fromDevice TEXT,
         ttl INTEGER NOT NULL,
         isForwarded INTEGER DEFAULT 0,
+        uploaded INTEGER DEFAULT 0,
         type TEXT NOT NULL
       )
     ''');

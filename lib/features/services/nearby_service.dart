@@ -3,6 +3,9 @@ import 'package:flutter/foundation.dart';
 import 'package:nearby_connections/nearby_connections.dart';
 import 'package:agap/features/services/database/alert_dao.dart';
 import 'package:agap/features/services/models/alert.dart';
+import 'package:agap/features/services/device_id.dart';
+import 'package:agap/features/services/supabase_service.dart';
+import 'package:agap/features/services/internet_service.dart';
 
 class NearbyService {
   static const Strategy strategy = Strategy.P2P_CLUSTER;
@@ -85,6 +88,11 @@ class NearbyService {
 
       final alert = Alert.fromJson(data);
 
+
+    // ignore own alerts
+    final deviceId = await DeviceIdService.getDeviceId();
+    if (alert.senderId == deviceId) return;
+
     // check ttl
     if (alert.ttl <= 0) {
       debugPrint('Dropped alert ${alert.id} (TTL expired)');
@@ -108,6 +116,23 @@ class NearbyService {
     );
 
     debugPrint('Received alert ${alert.id} with TTL ${alert.ttl}');
+
+    if (alert.ttl > 0) {
+      final updatedAlert = alert.copyWith(ttl: alert.ttl - 1);
+
+      await sendToAll(updatedAlert.toJson());
+
+      if (await hasInternet()) {
+        await SupabaseService.uploadAlert(alert);
+      } else {
+        debugPrint('No internet, will retry later via queue.');
+      }
+
+      debugPrint(
+        'Forwarded alert ${alert.id} with new TTL ${updatedAlert.ttl}',
+      );
+    }
+    
   } catch (e) {
     debugPrint('Payload error: $e');
     return;
