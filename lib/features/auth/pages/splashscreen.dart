@@ -7,7 +7,7 @@ import 'package:agap/features/auth/widgets/splash_logo.dart';
 import 'package:agap/features/responder/data/responder_dashboard_data.dart';
 import 'package:agap/features/responder/data/responder_dashboard_preview_data.dart';
 import 'package:agap/features/responder/data/responder_repository.dart';
-import 'package:agap/features/responder/pages/emergency_dashboard_page.dart';
+import 'package:agap/features/responder/pages/normal_dashboard_page.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -42,7 +42,7 @@ class _SplashPageState extends State<SplashPage> {
       if (responder != null) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute<void>(
-            builder: (_) => ResponderEmergencyDashboardPage(
+            builder: (_) => ResponderNormalDashboardPage(
               data: _buildDashboardData(responder),
             ),
           ),
