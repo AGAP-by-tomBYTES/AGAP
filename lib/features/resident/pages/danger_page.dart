@@ -68,7 +68,7 @@ class DangerPage extends StatelessWidget {
                   const SizedBox(height: 30),
 
                   Text(
-                    "Help is otw,\nEleah.",
+                    "The responders have received your alert.",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 28,

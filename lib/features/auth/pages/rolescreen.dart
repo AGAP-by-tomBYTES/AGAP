@@ -31,8 +31,9 @@ class RoleScreen extends StatelessWidget {
                         MaterialPageRoute<void>(
                           builder: (_) => const LoginPage(
                             roleLabel: 'Responder',
-                            idLabel: 'Employee ID',
-                            idHint: 'e.g. MDRRMO-23102B',
+                            // changed from employee to id kasi supabase needs an email for logging in 
+                            idLabel: 'Email',
+                            idHint: 'Enter your email address',
                           ),
                         ),
                       );
