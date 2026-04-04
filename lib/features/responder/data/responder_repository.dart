@@ -1,6 +1,10 @@
 import 'dart:typed_data';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:agap/features/responder/data/responder_dashboard_data.dart';
+import 'package:agap/features/responder/data/responder_dashboard_preview_data.dart';
+import 'package:agap/features/services/weather.dart';
+
 class ResponderRepository {
   SupabaseClient get _client => Supabase.instance.client;
 
@@ -72,7 +76,57 @@ class ResponderRepository {
         .single();
   }
 
+  Future<ResponderDashboardData> getDashboardData() async {
+    final row = await getCurrentResponder();
+    if (row == null) throw Exception('No responder profile found.');
+
+    final firstName  = row['first_name']  as String? ?? '';
+    final middleName = row['middle_name'] as String? ?? '';
+    final lastName   = row['last_name']   as String? ?? '';
+
+    final fullName = [
+      firstName,
+      if (middleName.trim().isNotEmpty) middleName,
+      lastName,
+    ].join(' ').trim();
+
+    final weatherService = WeatherService();
+
+    Map<String, String> advisory;
+
+    try {
+      advisory = await weatherService.getWeatherAdvisory();
+    } catch (e) {
+      advisory = {
+        'title': 'Weather Advisory',
+        'message': 'Unable to fetch live weather data.',
+      };
+    }
+
+    return ResponderDashboardData(
+      profile: ResponderProfileData(
+        name: fullName,
+        teamAndStationLabel: 'Team Alpha – Miagao Station',
+      ),
+      alertSummary: const AlertSummaryData(
+        activeCount: 0,
+        totalCount: 0,
+        resolvedCount: 0,
+      ),
+      teamStation: const TeamStationData(
+        team: 'Team Alpha',
+        station: 'Station 3 - Banwa, Miagao',
+      ),
+      weatherAdvisory: WeatherAdvisoryData(
+        title: advisory['title']!,
+        message: advisory['message']!,
+      ),
+      resolvedAlerts: const [],
+      emergencyDispatch: responderDashboardPreviewData.emergencyDispatch,
+    );
+  }
+
   Future<void> signOut() async {
-    await _client.auth.signOut();
+    await _client.auth.signOut(); 
   }
 }
