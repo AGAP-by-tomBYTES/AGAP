@@ -8,7 +8,7 @@ import 'package:agap/features/responder/data/responder_dashboard_data.dart';
 import 'package:agap/features/responder/data/responder_dashboard_preview_data.dart';
 import 'package:agap/features/responder/data/responder_repository.dart';
 import 'package:agap/features/responder/pages/emergency_dashboard_page.dart';
-// import 'package:agap/features/responder/pages/normal_dashboard_page.dart';
+import 'package:agap/features/responder/pages/normal_dashboard_page.dart';
 import 'package:agap/features/responder/pages/signup.dart';
 import 'package:agap/features/responder/widgets/auth_switch_prompt.dart';
 import 'package:agap/features/responder/widgets/signup_field.dart';
@@ -221,6 +221,7 @@ class _LoginPageState extends State<LoginPage> {
         ),
       );
     } catch (error) {
+      debugPrint('LOGIN ERROR: $error'); 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -283,7 +284,9 @@ class _LoginPageState extends State<LoginPage> {
     Map<String, String> advisory;
     try {
       advisory = await WeatherService().getWeatherAdvisory();
-    } catch (_) {
+      debugPrint(' WEATHER SUCCESS: $advisory');
+    } catch (e) {
+      debugPrint(' WEATHER ERROR: $e');
       advisory = {
         'title': 'Weather Advisory',
         'message': 'Unable to fetch live weather data.',
