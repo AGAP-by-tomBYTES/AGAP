@@ -147,25 +147,25 @@ class _ProfilePageState extends State<ProfilePage> {
                 ],
 
                 if (section == "Household Info") ...[
-                  _CounterCard(
+                  _counterCard(
                     label: "Household Size",
                     value: tempSize,
                     onChanged: (v) => setSheetState(() => tempSize = v),
                   ),
                   const SizedBox(height: 14),
-                  _CounterCard(
+                  _counterCard(
                     label: "Children",
                     value: tempChildren,
                     onChanged: (v) => setSheetState(() => tempChildren = v),
                   ),
                   const SizedBox(height: 14),
-                  _CounterCard(
+                  _counterCard(
                     label: "Elderly",
                     value: tempElderly,
                     onChanged: (v) => setSheetState(() => tempElderly = v),
                   ),
                   const SizedBox(height: 14),
-                  _CounterCard(
+                  _counterCard(
                     label: "Disabled",
                     value: tempDisabled,
                     onChanged: (v) => setSheetState(() => tempDisabled = v),
@@ -274,7 +274,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           '${userData['street']}, ${userData['barangay']}, ${userData['city']}',
                           style: TextStyle(
                               fontSize: 11,
-                              color: Colors.white.withOpacity(0.9))),
+                              color: Colors.white.withValues(alpha: 0.9))),
                     ],
                   ),
                   const Icon(Icons.notifications_none_outlined,
@@ -566,7 +566,7 @@ class _ProfilePageState extends State<ProfilePage> {
             color: _selectedIndex == index ? AppColors.agapCoral : Colors.black));
   }
 
-  Widget _CounterCard(
+  Widget _counterCard(
       {required String label,
       required int value,
       required Function(int) onChanged}) {

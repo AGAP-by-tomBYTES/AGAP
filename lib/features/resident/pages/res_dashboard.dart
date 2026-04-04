@@ -54,7 +54,7 @@ class _ResidentDashboardPageState extends State<ResidentDashboardPage> {
                         'Philadelphia St., Bagumbayan, Iloilo, PH',
                         style: TextStyle(
                           fontSize: 11,
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withValues(alpha: 0.9),
                         ),
                       ),
                     ],
@@ -297,7 +297,7 @@ class _ResidentDashboardPageState extends State<ResidentDashboardPage> {
           color: AppColors.agapOrangeAlt,
           shape: BoxShape.circle,
           border: Border.all(
-            color: AppColors.agapCoral.withOpacity(1),
+            color: AppColors.agapCoral.withValues(alpha: 1),
             width: 3,
           ),
           boxShadow: const [
