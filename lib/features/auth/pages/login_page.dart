@@ -14,6 +14,7 @@ import 'package:agap/features/responder/widgets/auth_switch_prompt.dart';
 import 'package:agap/features/responder/widgets/signup_field.dart';
 import 'package:agap/theme/color.dart';
 import 'package:agap/theme/typography.dart';
+import 'package:agap/features/services/weather.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({
@@ -241,34 +242,34 @@ class _LoginPageState extends State<LoginPage> {
       return responderDashboardPreviewData;
     }
 
-    final identifier = _idController.text.trim();
+    final email    = _idController.text.trim();
     final password = _passwordController.text.trim();
 
-    if (!identifier.contains('@')) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Supabase login currently uses the responder email. Opening preview dashboard instead.',
-          ),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return responderDashboardPreviewData;
-    }
-
-    await _repository.signIn(
-      email: identifier,
-      password: password,
-    );
+    await _repository.signIn(email: email, password: password);
 
     final responder = await _repository.getCurrentResponder();
-      if (responder == null) {
-        throw Exception('Responder profile not found. Contact your administrator.');
-      }
-      return _buildDashboardData(responder);
+    if (responder == null) {
+      throw Exception('Responder profile not found. Contact your administrator.');
+    }
+
+    return await _buildDashboardData(responder); // no longer needs await change — it's already awaited by the caller
   }
 
-    ResponderDashboardData _buildDashboardData(Map<String, dynamic> responder) {
+  //   await _repository.signIn(
+  //     email: identifier,
+  //     password: password,
+  //   );
+
+  //   final responder = await _repository.getCurrentResponder();
+  //     if (responder == null) {
+  //       throw Exception('Responder profile not found. Contact your administrator.');
+  //     }
+  //     return _buildDashboardData(responder);
+  // }
+  
+
+  Future<ResponderDashboardData> _buildDashboardData(
+      Map<String, dynamic> responder) async {
     final firstName  = responder['first_name']  as String? ?? '';
     final middleName = responder['middle_name'] as String? ?? '';
     final lastName   = responder['last_name']   as String? ?? '';
@@ -279,14 +280,27 @@ class _LoginPageState extends State<LoginPage> {
       lastName,
     ].where((part) => part.trim().isNotEmpty).join(' ').trim();
 
+    Map<String, String> advisory;
+    try {
+      advisory = await WeatherService().getWeatherAdvisory();
+    } catch (_) {
+      advisory = {
+        'title': 'Weather Advisory',
+        'message': 'Unable to fetch live weather data.',
+      };
+    }
+
     return ResponderDashboardData(
       profile: ResponderProfileData(
         name: fullName.isEmpty ? 'Responder' : fullName,
-        teamAndStationLabel: 'Team Alpha – Miagao Station', // hardcoded for now
+        teamAndStationLabel: 'Team Alpha – Miagao Station',
       ),
       alertSummary: responderDashboardPreviewData.alertSummary,
       teamStation: responderDashboardPreviewData.teamStation,
-      weatherAdvisory: responderDashboardPreviewData.weatherAdvisory,
+      weatherAdvisory: WeatherAdvisoryData(
+        title: advisory['title']!,
+        message: advisory['message']!,
+      ),
       resolvedAlerts: responderDashboardPreviewData.resolvedAlerts,
       emergencyDispatch: responderDashboardPreviewData.emergencyDispatch,
     );

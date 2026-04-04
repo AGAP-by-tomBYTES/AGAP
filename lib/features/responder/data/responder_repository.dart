@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:agap/features/responder/data/responder_dashboard_data.dart';
 import 'package:agap/features/responder/data/responder_dashboard_preview_data.dart';
+import 'package:agap/features/services/weather.dart';
 
 class ResponderRepository {
   SupabaseClient get _client => Supabase.instance.client;
@@ -89,6 +90,19 @@ class ResponderRepository {
       lastName,
     ].join(' ').trim();
 
+    final weatherService = WeatherService();
+
+    Map<String, String> advisory;
+
+    try {
+      advisory = await weatherService.getWeatherAdvisory();
+    } catch (e) {
+      advisory = {
+        'title': 'Weather Advisory',
+        'message': 'Unable to fetch live weather data.',
+      };
+    }
+
     return ResponderDashboardData(
       profile: ResponderProfileData(
         name: fullName,
@@ -103,9 +117,9 @@ class ResponderRepository {
         team: 'Team Alpha',
         station: 'Station 3 - Banwa, Miagao',
       ),
-      weatherAdvisory: const WeatherAdvisoryData(
-        title: 'Weather advisory',
-        message: 'PAGASA advisory details will appear here once the live weather report is connected.',
+      weatherAdvisory: WeatherAdvisoryData(
+        title: advisory['title']!,
+        message: advisory['message']!,
       ),
       resolvedAlerts: const [],
       emergencyDispatch: responderDashboardPreviewData.emergencyDispatch,
