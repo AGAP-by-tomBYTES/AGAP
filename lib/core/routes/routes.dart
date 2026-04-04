@@ -72,7 +72,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         builder: (_) => const ResidentHomePage(),
       );
 
-     case Routes.responder:
+     case Routes.responderDashboard:
       if (!RouteGuard.isLoggedIn()) {
         return _error("Unauthorized");
       }

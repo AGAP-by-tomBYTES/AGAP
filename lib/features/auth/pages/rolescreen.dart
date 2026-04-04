@@ -6,6 +6,8 @@ import 'package:agap/features/auth/widgets/role_card.dart';
 import 'package:agap/features/auth/widgets/role_screen_background.dart';
 import 'package:agap/features/auth/widgets/role_screen_footer.dart';
 import 'package:agap/theme/color.dart';
+import 'package:agap/core/routes/screen_routes.dart';
+import 'package:agap/core/services/navigation_service.dart';
 
 class RoleScreen extends StatelessWidget {
   const RoleScreen({super.key});
@@ -14,10 +16,7 @@ class RoleScreen extends StatelessWidget {
     debugPrint("RoleScreen: Role selected -> $role");
     debugPrint("Navigating to /login with role");
 
-    Navigator.pushNamed(
-      context,'/login',
-      arguments: role,
-    );
+    NavigationService.pushNamed(Routes.login, arguments: role);
   }
 
   @override
@@ -50,7 +49,7 @@ class RoleScreen extends StatelessWidget {
                   const Spacer(),
                   const Spacer(),
 
-                  // RESIDENT
+                  //RESIDENT
                   RoleCard(
                     title: "I'm a Resident",
                     subtitle: '*For residents',

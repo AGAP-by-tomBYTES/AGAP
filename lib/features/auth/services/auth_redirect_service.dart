@@ -5,6 +5,11 @@ import 'package:agap/core/services/navigation_service.dart';
 import 'package:agap/features/auth/services/auth_service.dart';
 import 'package:agap/features/auth/services/resident_service.dart';
 
+//auth redirect
+//checks if user is logged in
+//    verification status
+//    role
+//redirect to correct screen
 class AuthRedirectService {
 
   final AuthService _authService = AuthService();
@@ -26,11 +31,12 @@ class AuthRedirectService {
         return;
       }
 
-      NavigationService.pushReplacement(Routes.start);
+      //redirect to role screen
+      NavigationService.pushReplacement(Routes.role);
       return;
     } else {
       debugPrint("User found: ${user.id}");
-      debugPrint("User verification status: _authService.isVerified()");
+      debugPrint("User verification status: ${_authService.isVerified()}");
     }
 
     if (_authService.isVerified()) {
@@ -44,7 +50,7 @@ class AuthRedirectService {
 
       if (isResponder) {
         debugPrint("responder");
-        NavigationService.pushReplacement(Routes.responder);
+        NavigationService.pushReplacement(Routes.responderDashboard);
       } else {
         debugPrint("resident");
         NavigationService.pushReplacement(Routes.residentDashboard);
@@ -59,7 +65,7 @@ class AuthRedirectService {
       }
 
       debugPrint("Navigating to /verify");
-        NavigationService.pushReplacement(Routes.start);
+        NavigationService.pushReplacement(Routes.start); //placeholder route muna
     }
   }
 }

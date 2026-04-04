@@ -1,15 +1,94 @@
 import 'package:flutter/material.dart';
 import 'package:agap/features/resident/pages/send_sos.dart';
-
+import 'package:agap/features/auth/services/auth_service.dart';
 import 'package:agap/theme/color.dart';
 
-class ResidentHomePage extends StatelessWidget {
+class ResidentHomePage extends StatefulWidget {
   const ResidentHomePage({super.key});
 
   @override
+  State<ResidentHomePage> createState() =>
+      _ResidentHomePageState();
+}
+
+class _ResidentHomePageState extends State<ResidentHomePage> {
+  String? displayName;
+
+  @override
+  void initState() {
+    super.initState();
+    debugPrint("ResidentDashboardPage initialized");
+    _loadUser();
+  }
+
+  void _loadUser() {
+    debugPrint("Loading current user");
+
+    final auth = AuthService();
+    final user = auth.currentUser;
+
+    if (user != null) {
+      debugPrint("User found with email ${user.email}");
+
+      setState(() {
+        displayName = user.email;
+      });
+    } else {
+      debugPrint("No user found");
+
+      setState(() {
+        displayName = "Resident";
+      });
+    }
+  }
+
+  Future<void> _logout() async {
+    debugPrint("Logout button pressed");
+
+    try {
+      final auth = AuthService();
+      await auth.signOut();
+
+      debugPrint("User signed out successfully");
+
+      if (!mounted) return;
+
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        '/',
+        (route) => false,
+      );
+    } catch (e) {
+      debugPrint("Logout error: $e");
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    debugPrint("ResidentDashboardPage build called");
+
     return Scaffold(
       backgroundColor: Colors.white,
+
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        title: Text(
+          "Welcome, ${displayName ?? "Resident"}",
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: _logout,
+          ),
+        ],
+      ),
+
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
@@ -37,11 +116,13 @@ class ResidentHomePage extends StatelessWidget {
 
               const SizedBox(height: 40),
 
-              /// SOS BUTTON (CENTERPIECE)
+              /// SOS BUTTON (UNCHANGED UI)
               Expanded(
                 child: Center(
                   child: GestureDetector(
                     onTap: () {
+                      debugPrint("SOS button tapped");
+
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -81,7 +162,7 @@ class ResidentHomePage extends StatelessWidget {
                 ),
               ),
 
-              /// OPTIONAL INFO CARD
+              /// INFO CARD (UNCHANGED)
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
