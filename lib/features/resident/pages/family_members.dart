@@ -1,6 +1,5 @@
 import 'package:agap/features/resident/pages/resident_profile.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:agap/theme/color.dart';
 import 'package:agap/features/resident/pages/res_dashboard.dart';
 import 'package:agap/features/resident/pages/emergency_hotlines.dart';
@@ -14,7 +13,7 @@ class FamilyPage extends StatefulWidget {
 }
 
 class _FamilyPageState extends State<FamilyPage> {
-  int _selectedIndex = 3;
+  final int _selectedIndex = 3;
 
   final List<Map<String, String>> familyMembers = [
     {
@@ -154,7 +153,7 @@ class _FamilyPageState extends State<FamilyPage> {
                         'Philadelphia St., Bagumbayan, Iloilo, PH',
                         style: TextStyle(
                           fontSize: 11,
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withValues(alpha: 0.9),
                         ),
                       ),
                     ],
@@ -194,7 +193,8 @@ class _FamilyPageState extends State<FamilyPage> {
                   ),
 
                   const SizedBox(height: 20),
-                  ...familyMembers.map((member) => _buildMemberTile(member)).toList(),
+                  for (var member in familyMembers) 
+                      _buildMemberTile(member),
                   const SizedBox(height: 100), 
                 ],
               ),
@@ -213,7 +213,7 @@ class _FamilyPageState extends State<FamilyPage> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10)],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10)],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -18,7 +18,7 @@ class SosPage extends StatefulWidget {
 class _SosPageState extends State<SosPage> {
   double progress = 0.0;
   Timer? _timer;
-  int _selectedIndex = 2;
+  final int _selectedIndex = 2;
 
   void _startHolding() {
     progress = 0.0;
@@ -139,7 +139,7 @@ class _SosPageState extends State<SosPage> {
                             color: Colors.white,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
+                                color: Colors.black.withValues(alpha: 0.1),
                                 blurRadius: 20,
                                 spreadRadius: 5,
                               )
@@ -171,7 +171,7 @@ class _SosPageState extends State<SosPage> {
                                         ),
                                         TextSpan(
                                             text: "\nTap for ",
-                                            style: TextStyle(color: AppColors.agapCoral.withOpacity(0.8))),
+                                            style: TextStyle(color: AppColors.agapCoral.withValues(alpha: 0.8))),
                                         const TextSpan(
                                           text: "DANGER",
                                           style: TextStyle(

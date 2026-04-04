@@ -62,7 +62,7 @@ class SafePage extends StatelessWidget {
                       border: Border.all(color: safeColor, width: 4),
                       boxShadow: [
                         BoxShadow(
-                          color: safeColor.withOpacity(0.25),
+                          color: safeColor.withValues(alpha: 0.25),
                           blurRadius: 20,
                           spreadRadius: 2,
                         ),
@@ -190,7 +190,7 @@ class SafePage extends StatelessWidget {
         color: AppColors.agapOrangeAlt,
         shape: BoxShape.circle,
         border: Border.all(
-          color: AppColors.agapCoral.withOpacity(1),
+          color: AppColors.agapCoral.withValues(alpha: 1),
           width: 3,
         ),
         boxShadow: const [
