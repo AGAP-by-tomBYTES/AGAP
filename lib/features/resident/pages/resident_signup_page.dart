@@ -147,7 +147,7 @@ class _ResidentSignupPageState extends State<ResidentSignupPage> {
                         ),
                         const SizedBox(height: 14),
                         const Text(
-                          'Gender',
+                          'Sex',
                           style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
                         ),
                         const SizedBox(height: 8),
@@ -309,9 +309,9 @@ class _ResidentSignupPageState extends State<ResidentSignupPage> {
     }
 
     if (_selectedGender == null) {
-      debugPrint("Gender was not selected on step one");
+      debugPrint("Sex was not selected on step one");
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a gender')),
+        const SnackBar(content: Text('Please select a sex')),
       );
       return;
     }
