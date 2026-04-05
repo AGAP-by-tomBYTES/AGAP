@@ -82,14 +82,26 @@ class AuthService {
   }
 
   Future<Map<String, dynamic>?> getCurrentResident() async {
-    final residentId = client.auth.currentUser?.id;
-    if (residentId == null) return null;
+    final residentId = client.auth.currentUser;
 
-    return await client
+    if (residentId == null) {
+      debugPrint("No logged in user");
+    }
+
+    try {
+      final data = await client
         .from('resident')
         .select()
-        .eq('id', residentId)
-        .single();
+        .eq('id', residentId!.id)
+        .maybeSingle();
+
+      debugPrint("Resident data: $data");
+
+      return data;
+    } catch (e) {
+      debugPrint("Error getting resident profile: $e");
+      return null;
+    }
   }
 
   // sign up
@@ -116,7 +128,7 @@ class AuthService {
   //   }
   // }
 
-  Future<void> signUpResident(ResidentData data) async {
+  Future<bool> signUpResident(ResidentData data) async {
   final authResponse = await client.auth.signUp(
     email: data.email,
     password: data.password,
@@ -168,7 +180,16 @@ class AuthService {
     'signup_step': 5,
   });
 
+  final inserted = await client.from('resident')
+    .select().eq('id', residentId).maybeSingle();
+  
+  if (inserted == null) {
+    await client.auth.signOut();
+    throw Exception("Failed to create resident profile");
+  }
+
   debugPrint("Resident profile inserted successfully");
+  return true;
 }
 
   //resend supabase verification email

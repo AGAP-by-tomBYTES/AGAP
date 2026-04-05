@@ -1,5 +1,9 @@
 import 'dart:async';
 import 'package:agap/core/services/supabase_service.dart';
+import 'package:agap/features/resident/pages/emergency_hotlines.dart';
+import 'package:agap/features/resident/pages/family_members.dart';
+import 'package:agap/features/resident/pages/resident_dashboard.dart';
+import 'package:agap/features/resident/pages/resident_profile.dart';
 import 'package:agap/features/resident/pages/safe_state.dart';
 import 'package:agap/features/services/database/alert_dao.dart';
 import 'package:agap/features/services/internet_service.dart';
@@ -233,6 +237,66 @@ class _SosPageState extends State<SosPage> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildBottomBar() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      height: 65,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(40),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _navItem(Icons.home, 0, () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => ResidentDashboardPage()));
+          }),
+          _navItem(Icons.call, 1, () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const EmergencyHotlinesPage()));
+          }),
+          _buildCenterSosButton(),
+          _navItem(Icons.family_restroom_outlined, 3, () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const FamilyPage()));
+          }),
+          _navItem(Icons.person_outline, 4, () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => const ProfilePage()),
+              );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCenterSosButton() {
+    return Container(
+      width: 55,
+      height: 55,
+      decoration: BoxDecoration(
+        color: AppColors.agapOrangeAlt,
+        shape: BoxShape.circle,
+        border: Border.all(color: AppColors.agapCoral, width: 3),
+        boxShadow: const [
+          BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 4))
+        ],
+      ),
+      child: const Center(
+        child: Text("SOS", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+      ),
+    );
+  }
+
+  Widget _navItem(IconData icon, int index, VoidCallback onTap) {
+    final isActive = _selectedIndex == index;
+    return GestureDetector(
+      onTap: onTap,
+      child: Icon(icon, size: 30, color: isActive ? AppColors.agapCoral : Colors.black87),
     );
   }
 }
