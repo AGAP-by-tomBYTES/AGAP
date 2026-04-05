@@ -320,6 +320,8 @@ class _LoginPageState extends State<LoginPage> {
       debugPrint("LoginPage: Error -> $e");
 
       final message = _mapError(e.toString());
+      
+      if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(message)),
@@ -346,4 +348,4 @@ class _LoginPageState extends State<LoginPage> {
     }
     return "Login failed. Try again.";
   }
-}
+} 
