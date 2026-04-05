@@ -1,7 +1,7 @@
 import 'package:agap/features/resident/pages/resident_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:agap/theme/color.dart';
-import 'package:agap/features/resident/pages/res_dashboard.dart';
+import 'package:agap/features/resident/pages/resident_dashboard.dart';
 import 'package:agap/features/resident/pages/emergency_hotlines.dart';
 import 'package:agap/features/resident/pages/send_sos.dart';
 import 'package:agap/features/resident/widgets/birthdate_format.dart'; 
@@ -473,7 +473,7 @@ class _FamilyPageState extends State<FamilyPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _navItem(Icons.home, 0, () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ResidentDashboardPage()))),
+          _navItem(Icons.home, 0, () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ResidentDashboardPage()))),
           _navItem(Icons.call, 1, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EmergencyHotlinesPage()))),
           _buildCenterSosButton(),
           _navItem(Icons.family_restroom, 3, () {}),

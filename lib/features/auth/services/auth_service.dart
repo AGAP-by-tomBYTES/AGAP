@@ -82,14 +82,26 @@ class AuthService {
   }
 
   Future<Map<String, dynamic>?> getCurrentResident() async {
-    final residentId = client.auth.currentUser?.id;
-    if (residentId == null) return null;
+    final residentId = client.auth.currentUser;
 
-    return await client
+    if (residentId == null) {
+      debugPrint("No logged in user");
+    }
+
+    try {
+      final data = await client
         .from('resident')
         .select()
-        .eq('id', residentId)
-        .single();
+        .eq('id', residentId!.id)
+        .maybeSingle();
+
+      debugPrint("Resident data: $data");
+
+      return data;
+    } catch (e) {
+      debugPrint("Error getting resident profile: $e");
+      return null;
+    }
   }
 
   // sign up

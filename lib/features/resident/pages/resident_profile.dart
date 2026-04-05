@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:agap/theme/color.dart';
-import 'package:agap/features/resident/pages/res_dashboard.dart';
+import 'package:agap/features/resident/pages/resident_dashboard.dart';
 import 'package:agap/features/resident/pages/emergency_hotlines.dart';
 import 'package:agap/features/resident/pages/send_sos.dart';
 import 'package:agap/features/resident/pages/family_members.dart';
@@ -519,7 +519,7 @@ class _ProfilePageState extends State<ProfilePage> {
               () => Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                      builder: (_) => const ResidentDashboardPage()))),
+                      builder: (_) => ResidentDashboardPage()))),
           _navItem(
               Icons.call,
               1,

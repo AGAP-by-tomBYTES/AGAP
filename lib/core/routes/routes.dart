@@ -12,7 +12,8 @@ import 'package:agap/features/resident/pages/resident_signup_location.dart';
 
 import 'package:agap/features/resident/models/resident_data.dart';
 
-import 'package:agap/features/resident/pages/home_page.dart';
+// import 'package:agap/features/resident/pages/home_page.dart';
+import 'package:agap/features/resident/pages/resident_dashboard.dart';
 // import 'package:agap/features/responder/pages/home_page.dart';
 import 'package:agap/features/responder/pages/responder_signup_page.dart';
 import 'package:agap/features/responder/pages/emergency_dashboard_page.dart';
@@ -84,7 +85,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       }
 
       return MaterialPageRoute(
-        builder: (_) => const ResidentHomePage(),
+        builder: (_) => ResidentDashboardPage(),
       );
 
      case Routes.responderDashboard:

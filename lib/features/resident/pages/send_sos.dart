@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:agap/features/resident/pages/emergency_hotlines.dart';
 import 'package:agap/features/resident/pages/family_members.dart';
-import 'package:agap/features/resident/pages/res_dashboard.dart';
+import 'package:agap/features/resident/pages/resident_dashboard.dart';
 import 'package:agap/features/resident/pages/resident_profile.dart';
 import 'package:agap/features/resident/pages/safe_state.dart';
 import 'package:flutter/material.dart';
@@ -210,7 +210,7 @@ class _SosPageState extends State<SosPage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _navItem(Icons.home, 0, () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const ResidentDashboardPage()));
+            Navigator.push(context, MaterialPageRoute(builder: (_) => ResidentDashboardPage()));
           }),
           _navItem(Icons.call, 1, () {
             Navigator.push(context, MaterialPageRoute(builder: (_) => const EmergencyHotlinesPage()));

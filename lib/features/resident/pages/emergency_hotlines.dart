@@ -1,5 +1,5 @@
 import 'package:agap/features/resident/pages/family_members.dart';
-import 'package:agap/features/resident/pages/res_dashboard.dart';
+import 'package:agap/features/resident/pages/resident_dashboard.dart';
 import 'package:agap/features/resident/pages/resident_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:agap/theme/color.dart';
