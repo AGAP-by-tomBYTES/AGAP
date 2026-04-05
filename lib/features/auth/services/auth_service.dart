@@ -116,7 +116,7 @@ class AuthService {
   //   }
   // }
 
-  Future<void> signUpResident(ResidentData data) async {
+  Future<bool> signUpResident(ResidentData data) async {
   final authResponse = await client.auth.signUp(
     email: data.email,
     password: data.password,
@@ -168,7 +168,16 @@ class AuthService {
     'signup_step': 5,
   });
 
+  final inserted = await client.from('resident')
+    .select().eq('id', residentId).maybeSingle();
+  
+  if (inserted == null) {
+    await client.auth.signOut();
+    throw Exception("Failed to create resident profile");
+  }
+
   debugPrint("Resident profile inserted successfully");
+  return true;
 }
 
   //resend supabase verification email
