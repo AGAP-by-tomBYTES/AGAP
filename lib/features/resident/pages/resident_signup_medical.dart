@@ -1,11 +1,11 @@
 import 'package:agap/theme/color.dart';
 import 'package:flutter/material.dart';
-import '../data/resident_signup_data.dart';
+import 'package:agap/features/resident/models/resident_data.dart';
 import 'resident_signup_review.dart';
-import 'package:agap/features/responder/widgets/signup_step_header.dart';
+import 'package:agap/features/auth/widgets/signup_step_header.dart';
 
 class ResidentSignupMedicalPage extends StatefulWidget {
-  final ResidentSignupData data;
+  final ResidentData data;
 
   const ResidentSignupMedicalPage({super.key, required this.data});
 
@@ -14,13 +14,12 @@ class ResidentSignupMedicalPage extends StatefulWidget {
       _ResidentSignupMedicalPageState();
 }
 
-class _ResidentSignupMedicalPageState
-    extends State<ResidentSignupMedicalPage> {
-
+class _ResidentSignupMedicalPageState extends State<ResidentSignupMedicalPage> {
   final _conditions = TextEditingController();
   final _history = TextEditingController();
   final _allergies = TextEditingController();
   final _medications = TextEditingController();
+  final _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -31,30 +30,62 @@ class _ResidentSignupMedicalPageState
     _medications.text = widget.data.medications ?? '';
   }
 
+  @override
+  void dispose() {
+    _conditions.dispose();
+    _history.dispose();
+    _allergies.dispose();
+    _medications.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   void _next() {
-    widget.data.conditions = _conditions.text;
-    widget.data.history = _history.text;
-    widget.data.allergies = _allergies.text;
-    widget.data.medications = _medications.text;
+    final updatedData = ResidentData(
+      email: widget.data.email,
+      password: widget.data.password,
+      firstName: widget.data.firstName,
+      middleName: widget.data.middleName,
+      lastName: widget.data.lastName,
+      suffix: widget.data.suffix,
+      phone: widget.data.phone,
+      birthdate: widget.data.birthdate,
+      sex: widget.data.sex,
+      houseNo: widget.data.houseNo,
+      street: widget.data.street,
+      barangay: widget.data.barangay,
+      municipality: widget.data.municipality,
+      city: widget.data.city,
+      province: widget.data.province,
+      region: widget.data.region,
+      postalCode: widget.data.postalCode,
+      landmark: widget.data.landmark,
+      householdSize: widget.data.householdSize,
+      children: widget.data.children,
+      elderly: widget.data.elderly,
+      disabled: widget.data.disabled,
+      pets: widget.data.pets,
+      conditions: _conditions.text.trim().isEmpty ? null : _conditions.text.trim(),
+      history: _history.text.trim().isEmpty ? null : _history.text.trim(),
+      allergies: _allergies.text.trim().isEmpty ? null : _allergies.text.trim(),
+      medications: _medications.text.trim().isEmpty ? null : _medications.text.trim(),
+    );
 
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => ResidentSignupReviewPage(data: widget.data),
+        builder: (_) => ResidentSignupReviewPage(data: updatedData),
       ),
     );
   }
 
-  /// LABEL OUTSIDE + FIELD INSIDE (CLEAN FORM STYLE)
   Widget _field(String label, TextEditingController controller,
       {int maxLines = 1, String? hint}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.only(bottom: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
-       
           Text(
             label,
             style: const TextStyle(
@@ -62,10 +93,7 @@ class _ResidentSignupMedicalPageState
               fontWeight: FontWeight.w800,
             ),
           ),
-
           const SizedBox(height: 8),
-
-
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14),
             decoration: BoxDecoration(
@@ -76,11 +104,10 @@ class _ResidentSignupMedicalPageState
             child: TextField(
               controller: controller,
               maxLines: maxLines,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 border: InputBorder.none,
-                hintStyle: TextStyle(
-                  color: Colors.grey,
-                ),
+                hintText: hint,
+                hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
               ),
             ),
           ),
@@ -100,24 +127,50 @@ class _ResidentSignupMedicalPageState
               stepLabel: "STEP 4 OF 5",
               sectionLabel: "MEDICAL",
               title: "Medical Information",
-              description:
-                  "Shared only with medical responders during emergencies.",
+              description: "Shared only with medical responders during emergencies.",
             ),
-
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: SingleChildScrollView(
+                controller: _scrollController,
+                padding: const EdgeInsets.fromLTRB(28, 16, 28, 32),
                 child: Column(
                   children: [
+                    _field("Current Conditions", _conditions, hint: 'e.g.: diabetes, hypertension'),
+                    _field("Past Medical History", _history, hint: 'e.g.: surgeries, hospitalizations'),
+                    _field("Allergies", _allergies, hint: 'e.g.: peanuts, penicillin'),
+                    _field("Medications", _medications, hint: 'e.g.: aspirin, insulin'),
+                    
+                    const SizedBox(height: 24),
 
-                    const SizedBox(height: 16),
-                    _field("Current Conditions", _conditions, hint: 'e.g.: diabetes, hypertension, etc.'),
-                    _field("Past Medical History", _history, hint: 'e.g.: surgeries, hospitalizations, etc.'),
-                    _field("Allergies", _allergies, hint: 'e.g.: peanuts, shellfish, etc.'),
-                    _field("Medications", _medications, hint: 'e.g.: aspirin, insulin, etc.'),
+                    /// SKIP/LATER INFORMATION HINT
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.blueGrey.shade50,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.help_outline_rounded, size: 20, color: Colors.blueGrey.shade600),
+                          const SizedBox(width: 10),
+                          const Expanded(
+                            child: Text(
+                              'You can update these details later in your profile. Press continue to proceed.',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.black87,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
 
-                    const Spacer(),
+                    const SizedBox(height: 24),
 
+                    // NAVIGATION BUTTONS
                     Row(
                       children: [
                         Expanded(
@@ -132,8 +185,6 @@ class _ResidentSignupMedicalPageState
                             ),
                             child: Row(
                               children: [
-
-                                /// LEFT: ARROW CIRCLE
                                 Container(
                                   width: 40,
                                   height: 40,
@@ -147,10 +198,7 @@ class _ResidentSignupMedicalPageState
                                     color: Colors.black,
                                   ),
                                 ),
-
                                 const SizedBox(width: 12),
-
-                                /// RIGHT: TEXT PUSHED TO RIGHT SIDE
                                 const Expanded(
                                   child: Text(
                                     "BACK",
@@ -158,6 +206,7 @@ class _ResidentSignupMedicalPageState
                                     style: TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.w800,
+                                      color: Colors.black,
                                     ),
                                   ),
                                 ),
@@ -165,9 +214,7 @@ class _ResidentSignupMedicalPageState
                             ),
                           ),
                         ),
-
                         const SizedBox(width: 12),
-
                         Expanded(
                           child: FilledButton(
                             onPressed: _next,
@@ -181,9 +228,7 @@ class _ResidentSignupMedicalPageState
                             ),
                             child: Row(
                               children: [
-
                                 const SizedBox(width: 12),
-
                                 const Expanded(
                                   child: Text(
                                     "CONTINUE",
@@ -193,7 +238,6 @@ class _ResidentSignupMedicalPageState
                                     ),
                                   ),
                                 ),
-
                                 Container(
                                   width: 40,
                                   height: 40,

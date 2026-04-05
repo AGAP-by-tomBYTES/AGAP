@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:agap/features/responder/data/responder_repository.dart';
+import 'package:agap/features/responder/data/responder_service.dart';
 
 class ResponderTestPage extends StatefulWidget {
   const ResponderTestPage({super.key});
@@ -9,7 +9,7 @@ class ResponderTestPage extends StatefulWidget {
 }
 
 class _ResponderTestPageState extends State<ResponderTestPage> {
-  final _repository = ResponderRepository();
+  final _repository = ResponderService();
   Map<String, dynamic>? _responder;
   bool _loading = true;
 

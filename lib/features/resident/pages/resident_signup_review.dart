@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import '../data/resident_signup_data.dart';
-import '../data/resident_repository.dart';
+import 'package:agap/features/resident/models/resident_data.dart';
+import 'package:agap/features/auth/services/auth_service.dart';
 import 'resident_test_page.dart';
-import 'package:agap/features/responder/widgets/signup_step_header.dart';
+import 'package:agap/features/auth/widgets/signup_step_header.dart';
 
 class ResidentSignupReviewPage extends StatelessWidget {
-  final ResidentSignupData data;
+  final ResidentData data;
 
   const ResidentSignupReviewPage({super.key, required this.data});
 
   @override
   Widget build(BuildContext context) {
-    final repo = ResidentRepository();
+    final repo = AuthService();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -42,7 +42,7 @@ class ResidentSignupReviewPage extends StatelessWidget {
                       _item("Email", data.email),
                       _item("Phone", data.phone),
                       _item("Birthdate", data.birthdate),
-                      _item("Gender", data.gender),
+                      _item("Gender", data.sex),
                     ]),
 
                     _section("LOCATION DETAILS", [
@@ -132,7 +132,7 @@ class ResidentSignupReviewPage extends StatelessWidget {
                   Expanded(
                     child: FilledButton(
                       onPressed: () async {
-                        await repo.signUp(data);
+                        await repo.signUpResident(data);
                         if (!context.mounted) return;
 
                         Navigator.pushReplacement(

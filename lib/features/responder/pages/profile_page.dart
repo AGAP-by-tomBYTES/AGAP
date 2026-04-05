@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:agap/features/auth/pages/rolescreen.dart';
 import 'package:agap/features/responder/data/responder_dashboard_data.dart';
-import 'package:agap/features/responder/data/responder_repository.dart';
+import 'package:agap/features/responder/data/responder_service.dart';
 import 'package:agap/features/responder/widgets/dashboard_section_card.dart';
 import 'package:agap/theme/color.dart';
 
@@ -19,7 +19,7 @@ class ResponderProfilePage extends StatefulWidget {
 }
 
 class _ResponderProfilePageState extends State<ResponderProfilePage> {
-  final _repository = ResponderRepository();
+  final _repository = ResponderService();
   bool _isSigningOut = false;
 
   @override

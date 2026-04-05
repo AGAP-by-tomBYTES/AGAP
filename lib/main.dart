@@ -1,71 +1,29 @@
+//main.dart - entry point of the app
+
+//dependencies
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:agap/config/app_config.dart';
-import 'package:agap/features/auth/pages/splashscreen.dart';
-import 'package:agap/theme/color.dart';
-import 'package:agap/features/services/nearby_service.dart';
-import 'package:agap/features/services/database/sos_queue.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
+import 'package:agap/core/services/supabase_service.dart';
+import 'package:agap/agap.dart';
+
+/*
+initialize supabase, hive, and run the app
+*/
 void main() async {
+
   WidgetsFlutterBinding.ensureInitialized();
+  debugPrint("Flutter bindings initialized");
 
-  // initialize nearby for p2p connections
-  await NearbyService.init();
-  // start SOS queue processor
-  SosQueueService.startQueueProcessor();
+  await Hive.initFlutter();
+  debugPrint("Hive initialized");
 
-  await _initializeSupabaseIfConfigured();
-  runApp(const MyApp());
-}
-// initialize supabase if env vars are present, otherwise skip to avoid runtime errors in dev/test environments without .env file
-Future<void> _initializeSupabaseIfConfigured() async {
-  try {
-    await dotenv.load(fileName: '.env');
-  } catch (e) {
-    debugPrint(' .env not found: $e');
-    return;
-  }
+  await Hive.openBox("app_cache");
+  debugPrint("Hive box 'app_cache' opened");
 
-  final supabaseUrl = dotenv.env['SUPABASE_URL'];
-  final supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY'];
+  await SupabaseService.initialize();
+  debugPrint("Supabase initialized");
 
-  debugPrint('SUPABASE_URL: $supabaseUrl');
-  debugPrint('SUPABASE_ANON_KEY: ${supabaseAnonKey != null ? 'found' : 'missing'}');
-
-  if (supabaseUrl == null ||
-      supabaseUrl.isEmpty ||
-      supabaseAnonKey == null ||
-      supabaseAnonKey.isEmpty) {
-    debugPrint('Supabase env vars missing or empty, skipping init.');
-    return;
-  }
-
-  await Supabase.initialize(
-    url: supabaseUrl,
-    anonKey: supabaseAnonKey,
-  );
-  AppConfig.isSupabaseConfigured = true;
-  debugPrint('Supabase initialized successfully.');
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'AGAP',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.agapOrange,
-          primary: AppColors.agapOrange,
-        ),
-        scaffoldBackgroundColor: AppColors.agapOrange,
-        useMaterial3: true,
-      ),
-      home: const SplashPage(),
-    );
-  }
+  debugPrint("Launching Agap app");
+  runApp(const Agap());
 }

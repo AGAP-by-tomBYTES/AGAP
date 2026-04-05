@@ -5,7 +5,7 @@ import 'package:agap/features/responder/widgets/signup_step_header.dart';
 import 'package:agap/features/responder/widgets/verification_upload_card.dart';
 import 'package:agap/theme/color.dart';
 import 'package:agap/theme/typography.dart';
-import 'package:agap/features/responder/data/responder_repository.dart';
+import 'package:agap/features/responder/data/responder_service.dart';
 import 'package:agap/features/responder/pages/responder_test_page.dart';
 
 class ResponderSignupVerificationPage extends StatefulWidget {
@@ -45,7 +45,7 @@ class _ResponderSignupVerificationPageState
   final _scrollController = ScrollController();
   final _employeeIdController = TextEditingController();
   final _imagePicker = ImagePicker();
-  final _repository = ResponderRepository();
+  final _repository = ResponderService();
   bool _isLoading = false;
   String? _selectedRole;
   Uint8List? _employeeIdImageBytes;
@@ -311,7 +311,7 @@ class _ResponderSignupVerificationPageState
     setState(() => _isLoading = true);
 
     try {
-      await _repository.signUp(
+      await _repository.signUpResponder(
         email: widget.email,
         password: widget.password,
         firstName: widget.firstName,

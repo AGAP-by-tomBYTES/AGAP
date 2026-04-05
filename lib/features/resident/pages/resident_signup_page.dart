@@ -1,15 +1,22 @@
+//dependencies
 import 'package:flutter/material.dart';
-import 'package:agap/features/resident/data/resident_signup_data.dart';
-import 'package:agap/features/resident/pages/resident_signup_location.dart';
-import 'package:agap/features/responder/widgets/auth_switch_prompt.dart';
-import 'package:agap/features/responder/widgets/signup_field.dart';
-import 'package:agap/features/responder/widgets/signup_step_header.dart';
-import 'package:agap/features/resident/widgets/birthdate_format.dart';
-import 'package:agap/theme/color.dart';
 import 'package:flutter/services.dart';
 
+import 'package:agap/theme/color.dart';
+import 'package:agap/features/auth/widgets/widgets.dart';
+
+import 'package:agap/core/routes/screen_routes.dart';
+import 'package:agap/core/services/navigation_service.dart';
+
+import 'package:agap/features/auth/user_role.dart';
+import 'package:agap/features/resident/models/resident_data.dart';
+
+
+
 class ResidentSignupPage extends StatefulWidget {
-  const ResidentSignupPage({super.key});
+  final UserRole role;
+
+  const ResidentSignupPage({super.key, required this.role});
 
   @override
   State<ResidentSignupPage> createState() => _ResidentSignupPageState();
@@ -28,6 +35,7 @@ class _ResidentSignupPageState extends State<ResidentSignupPage> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _birthdateController = TextEditingController();
+
   String? _selectedGender;
 
   bool _isHiddenPassword = true;
@@ -56,11 +64,10 @@ class _ResidentSignupPageState extends State<ResidentSignupPage> {
         child: Column(
           children: [
             const SignupStepHeader(
-              stepLabel: 'STEP 1 OF 5',
+              stepLabel: '',
               sectionLabel: 'ACCOUNT',
               title: 'Create your account',
-              description:
-                  'Your details help us reach you faster in an emergency.',
+              description: 'Your details help us reach you faster in an emergency.',
             ),
             Expanded(
               child: Scrollbar(
@@ -75,7 +82,6 @@ class _ResidentSignupPageState extends State<ResidentSignupPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        /// FIRST + LAST NAME
                         Row(
                           children: [
                             Expanded(
@@ -83,9 +89,12 @@ class _ResidentSignupPageState extends State<ResidentSignupPage> {
                                 label: 'First name',
                                 hint: 'e.g. Juan',
                                 controller: _firstNameController,
-                                validator: (v) => v == null || v.trim().isEmpty
-                                    ? 'Required'
-                                    : null,
+                                validator: (v) {
+                                  if (v == null || v.trim().length < 2) {
+                                    return 'Min 2 characters';
+                                  }
+                                  return null;
+                                },
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -94,17 +103,17 @@ class _ResidentSignupPageState extends State<ResidentSignupPage> {
                                 label: 'Last name',
                                 hint: 'e.g. Dela Cruz',
                                 controller: _lastNameController,
-                                validator: (v) => v == null || v.trim().isEmpty
-                                    ? 'Required'
-                                    : null,
+                                validator: (v) {
+                                  if (v == null || v.trim().length < 2) {
+                                    return 'Min 2 characters';
+                                  }
+                                  return null;
+                                },
                               ),
                             ),
                           ],
                         ),
-
                         const SizedBox(height: 14),
-
-                        /// MIDDLE + SUFFIX
                         Row(
                           children: [
                             Expanded(
@@ -124,83 +133,65 @@ class _ResidentSignupPageState extends State<ResidentSignupPage> {
                             ),
                           ],
                         ),
-
-                      const SizedBox(height: 14),
-                      SignupField(
-                      label: 'Birthdate',
-                      hint: "MM/DD/YYYY", 
-                      controller: _birthdateController,
-                      keyboardType: TextInputType.number,
-                      validator: _validateBirthdate,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly, 
-                      BirthdateInputFormatter(),],
-                      ),
-
-                      const SizedBox(height: 14),
-
-                      const Text(
-                        'Gender',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
+                        const SizedBox(height: 14),
+                        SignupField(
+                          label: 'Birthdate',
+                          hint: "MM/DD/YYYY",
+                          controller: _birthdateController,
+                          keyboardType: TextInputType.number,
+                          validator: _validateBirthdate,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            BirthdateInputFormatter(),
+                          ],
                         ),
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      Wrap(
-                        spacing: 8,
-                        children: [
-                          _genderChip('Male'),
-                          _genderChip('Female'),
-                          _genderChip('Non-binary'),
-                          _genderChip('Prefer not to say'),
-                        ],
-                      ),
-         
-                      const SizedBox(height: 14),
-                        /// EMAIL
+                        const SizedBox(height: 14),
+                        const Text(
+                          'Sex',
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          children: [
+                            _genderChip('Male'),
+                            _genderChip('Female'),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
                         SignupField(
                           label: 'Email',
                           hint: 'e.g. juan@gmail.com',
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
                           validator: (v) {
-                            if (v == null || v.trim().isEmpty) {
-                              return 'Required';
-                            }
-                            if (!v.contains('@')) {
-                              return 'Enter a valid email';
-                            }
+                            if (v == null || v.trim().isEmpty) return 'Required';
+                            if (!v.contains('@')) return 'Enter a valid email';
                             return null;
                           },
                         ),
-
                         const SizedBox(height: 14),
-
-                        /// PHONE
                         SignupField(
                           label: 'Phone number',
                           controller: _phoneController,
                           keyboardType: TextInputType.phone,
                           validator: (v) {
-                            if (v == null || v.trim().length != 13 || !v.startsWith('+63')) {
-                              return 'Enter a valid phone number';
+                            final regex = RegExp(r'^\+?[0-9]{10,15}$');
+                            if (v == null || !regex.hasMatch(v.trim())) {
+                              return 'Invalid phone number';
                             }
                             return null;
                           },
                         ),
-
                         const SizedBox(height: 14),
-
-                        /// PASSWORD
                         SignupField(
                           label: 'Password',
                           controller: _passwordController,
                           obscureText: _isHiddenPassword,
                           validator: (v) {
-                            if (v == null || v.isEmpty) return 'Required';
-                            if (v.length < 6) return 'Min 6 characters';
+                            if (v == null || v.length < 6) {
+                              return 'Min 6 characters';
+                            }
                             return null;
                           },
                           suffixIcon: IconButton(
@@ -217,16 +208,12 @@ class _ResidentSignupPageState extends State<ResidentSignupPage> {
                             ),
                           ),
                         ),
-
                         const SizedBox(height: 14),
-
-                        /// CONFIRM PASSWORD
                         SignupField(
                           label: 'Confirm Password',
                           controller: _confirmPasswordController,
                           obscureText: _isHiddenConfirmPassword,
                           validator: (v) {
-                            if (v == null || v.isEmpty) return 'Required';
                             if (v != _passwordController.text) {
                               return 'Passwords do not match';
                             }
@@ -247,10 +234,7 @@ class _ResidentSignupPageState extends State<ResidentSignupPage> {
                             ),
                           ),
                         ),
-
                         const SizedBox(height: 22),
-
-                        /// CONTINUE BUTTON
                         SizedBox(
                           width: double.infinity,
                           child: FilledButton(
@@ -293,15 +277,15 @@ class _ResidentSignupPageState extends State<ResidentSignupPage> {
                             ),
                           ),
                         ),
-
                         const SizedBox(height: 12),
-
-                        /// LOGIN SWITCH
                         AuthSwitchPrompt(
                           promptText: 'Already have an account? ',
                           actionText: 'Log In',
                           onTap: () {
-                            Navigator.of(context).pop();
+                            NavigationService.pushReplacement(
+                              Routes.login,
+                              arguments: UserRole.resident,
+                            );
                           },
                         ),
                       ],
@@ -317,19 +301,24 @@ class _ResidentSignupPageState extends State<ResidentSignupPage> {
   }
 
   void _handleContinue() {
-    if (!_formKey.currentState!.validate()) return;
+    debugPrint("User tapped continue on step one");
+
+    if (!_formKey.currentState!.validate()) {
+      debugPrint("Form validation failed on step one");
+      return;
+    }
 
     if (_selectedGender == null) {
+      debugPrint("Sex was not selected on step one");
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select a gender'),
-          behavior: SnackBarBehavior.floating,
-        ),
+        const SnackBar(content: Text('Please select a sex')),
       );
       return;
     }
 
-    final data = ResidentSignupData(
+    debugPrint("Form validation passed on step one");
+
+    final data = ResidentData(
       email: _emailController.text.trim(),
       password: _passwordController.text.trim(),
       firstName: _firstNameController.text.trim(),
@@ -340,47 +329,61 @@ class _ResidentSignupPageState extends State<ResidentSignupPage> {
       suffix: _suffixController.text.trim().isEmpty
           ? null
           : _suffixController.text.trim(),
-      phone: _phoneController.text.trim(), 
-      birthdate: _birthdateController.text.trim(),
-      gender: _selectedGender!,
+      phone: _phoneController.text.trim(),
+      birthdate: _parseBirthdate(_birthdateController.text),
+      sex: _selectedGender!.toLowerCase(),
+      city: "",
+      province: "",
+      region: "",
+    );
 
-    )
-      ..birthdate = _birthdateController.text.trim()
-      ..gender = _selectedGender!;
+    debugPrint("Resident data was created on step one");
+    debugPrint(data.toJson().toString());
 
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => ResidentSignupLocationPage(data: data),
-      ),
+    debugPrint("Navigating to step two location page");
+
+    NavigationService.pushNamed(
+      Routes.residentSignupPage2,
+      arguments: data,
+    );
+
+    debugPrint("ResidentData object has been created successfully");
+
+debugPrint("Printing ResidentData as JSON");
+debugPrint(data.toJson().toString());
+
+debugPrint("Verifying individual mapped fields");
+debugPrint("Mapped first_name is ${data.firstName}");
+debugPrint("Mapped middle_name is ${data.middleName}");
+debugPrint("Mapped last_name is ${data.lastName}");
+debugPrint("Mapped suffix is ${data.suffix}");
+debugPrint("Mapped phone is ${data.phone}");
+debugPrint("Mapped birthdate is ${data.birthdate}");
+debugPrint("Mapped sex is ${data.sex}");
+debugPrint("Mapped city is ${data.city}");
+debugPrint("Mapped province is ${data.province}");
+debugPrint("Mapped region is ${data.region}");
+
+debugPrint("Step one completed and navigation is intentionally skipped for debugging");
+  }
+
+  DateTime _parseBirthdate(String input) {
+    final parts = input.split('/');
+    return DateTime(
+      int.parse(parts[2]),
+      int.parse(parts[0]),
+      int.parse(parts[1]),
     );
   }
 
   String? _validateBirthdate(String? value) {
     if (value == null || value.isEmpty) return 'Required';
-
     final parts = value.split('/');
     if (parts.length != 3) return 'Invalid format';
-
-    final month = int.tryParse(parts[0]);
-    final day = int.tryParse(parts[1]);
-    final year = int.tryParse(parts[2]);
-
-    if (month == null || month < 1 || month > 12) {
-      return 'Invalid month';
-    }
-
-    if (day == null || day < 1 || day > 31) {
-      return 'Invalid day';
-    }
-
-    if (year == null || year < 1900 || year > DateTime.now().year) {
-      return 'Invalid year';
-    }
-
     return null;
   }
 
-    Widget _genderChip(String label) {
+  Widget _genderChip(String label) {
     final isSelected = _selectedGender == label;
 
     return ChoiceChip(
@@ -394,4 +397,3 @@ class _ResidentSignupPageState extends State<ResidentSignupPage> {
     );
   }
 }
-
