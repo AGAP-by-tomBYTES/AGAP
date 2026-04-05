@@ -7,6 +7,7 @@ import 'package:agap/features/resident/pages/family_members.dart';
 import 'package:agap/features/resident/pages/resident_profile.dart';
 import 'package:agap/features/resident/pages/send_sos.dart';
 import 'package:agap/features/resident/pages/emergency_hotlines.dart';
+import 'package:agap/features/resident/widgets/resident_header.dart';
 
 
 class ResidentDashboardPage extends StatefulWidget {
@@ -46,47 +47,7 @@ class _ResidentDashboardPageState extends State<ResidentDashboardPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-        
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(24, 50, 24, 25),
-              decoration: BoxDecoration(
-                color: AppColors.agapOrangeDeep,
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(20),
-                  bottomRight: Radius.circular(20),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        isLoading ? 'Loading...' : 'Hi, ${resident?['first_name'] ?? 'User'}',
-                        style: TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        isLoading ? '' : '${resident?['street'] ?? ''}, ${resident?['barangay'] ?? ''}, ${resident?['city'] ?? ''}',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.white.withValues(alpha: 0.9),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Icon(Icons.notifications_none_outlined,
-                      color: Colors.white, size: 28),
-                ],
-              ),
-            ),
-
+            ResidentHeader(resident: resident, isLoading: isLoading,),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Column(
