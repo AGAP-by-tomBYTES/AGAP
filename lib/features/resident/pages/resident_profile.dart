@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:agap/theme/color.dart';
-import 'package:agap/features/resident/pages/resident_dashboard.dart';
-import 'package:agap/features/resident/pages/emergency_hotlines.dart';
-import 'package:agap/features/resident/pages/send_sos.dart';
-import 'package:agap/features/resident/pages/family_members.dart';
+
+import 'package:agap/features/resident/services/resident_services.dart';
 import 'package:agap/features/resident/widgets/resident_header.dart';
 import 'package:agap/features/resident/widgets/bottom_navbar.dart';
 
@@ -19,34 +17,47 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final int _selectedIndex = 4;
+  final ResidentService _residentService = ResidentService();
 
-  // Mock Data
-  Map<String, dynamic> userData = {
-    "firstName": "Eleah Joy",
-    "middleName": "Melchor",
-    "lastName": "Dela Cruz",
-    "suffix": "",
-    "email": "eleah.joy@email.com",
-    "phone": "0912 345 6789",
-    "birthdate": "05/12/1998",
-    "gender": "Female",
-    "houseNo": "12",
-    "street": "Philadelphia St.",
-    "barangay": "Bagumbayan",
-    "city": "Iloilo City",
-    "province": "Iloilo",
-    "postalCode": "5000",
-    "landmark": "Near the blue gate",
-    "householdSize": 4,
-    "children": 1,
-    "elderly": 1,
-    "disabled": 0,
-    "pets": "2 Dogs",
-    "conditions": "None",
-    "history": "None",
-    "allergies": "Peanuts, Dust",
-    "medications": "None",
-  };
+  bool isLoading = false;
+
+  late Map<String, dynamic> userData;
+
+  @override
+  void initState() {
+    super.initState();
+
+    userData = {
+  ...widget.resident ?? {},
+  
+  "firstName": widget.resident?['first_name'] ?? "",
+  "middleName": widget.resident?['middle_name'] ?? "",
+  "lastName": widget.resident?['last_name'] ?? "",
+  "suffix": widget.resident?['suffix'] ?? "",
+  "email": widget.resident?['email'] ?? "",
+  "phone": widget.resident?['phone'] ?? "",
+  "birthdate": widget.resident?['birthdate'] ?? "",
+  
+  "houseNo": widget.resident?['house_no'] ?? "",
+  "street": widget.resident?['street'] ?? "",
+  "barangay": widget.resident?['barangay'] ?? "",
+  "city": widget.resident?['city'] ?? "",
+  "province": widget.resident?['province'] ?? "",
+  "postalCode": widget.resident?['postal_code'] ?? "",
+  "landmark": widget.resident?['landmark'] ?? "",
+
+  "householdSize": widget.resident?['household_size'] ?? 1,
+  "children": widget.resident?['children'] ?? 0,
+  "elderly": widget.resident?['elderly'] ?? 0,
+  "disabled": widget.resident?['disabled'] ?? 0,
+
+  "pets": widget.resident?['pets'] ?? "",
+  "conditions": widget.resident?['conditions'] ?? "",
+  "history": widget.resident?['history'] ?? "",
+  "allergies": widget.resident?['allergies'] ?? "",
+  "medications": widget.resident?['medications'] ?? "",
+};
+  }
 
   void _openEditSheet(String section) {
     // Controllers
@@ -71,11 +82,10 @@ class _ProfilePageState extends State<ProfilePage> {
     final allergyCtrl = TextEditingController(text: userData['allergies']);
     final medCtrl = TextEditingController(text: userData['medications']);
 
-    // Temporary values for counters
-    int tempSize = userData['householdSize'];
-    int tempChildren = userData['children'];
-    int tempElderly = userData['elderly'];
-    int tempDisabled = userData['disabled'];
+    int tempSize = int.tryParse(userData['householdSize'].toString()) ?? 1;
+    int tempChildren = int.tryParse(userData['children'].toString()) ?? 0;
+    int tempElderly = int.tryParse(userData['elderly'].toString()) ?? 0;
+    int tempDisabled = int.tryParse(userData['disabled'].toString()) ?? 0;
 
     showModalBottomSheet(
       context: context,
@@ -199,16 +209,51 @@ class _ProfilePageState extends State<ProfilePage> {
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12)),
                     ),
-                    onPressed: () {
-                      setState(() {
+                    onPressed: isLoading ? null : () async {
+
+                      final navigator = Navigator.of(context);
+                      final messenger = ScaffoldMessenger.of(context);
+                      
+                      setState(() => isLoading = true);
+
+                      try {
                         if (section == "Personal Info") {
-                          userData['firstName'] = fNameCtrl.text;
-                          userData['middleName'] = mNameCtrl.text;
-                          userData['lastName'] = lNameCtrl.text;
-                          userData['suffix'] = suffixCtrl.text;
-                          userData['email'] = emailCtrl.text;
-                          userData['phone'] = phoneCtrl.text;
+                          await _residentService.updateBasicInfo(
+                            firstName: fNameCtrl.text,
+                            middleName: mNameCtrl.text.isEmpty ? null
+                                        : mNameCtrl.text,
+                            lastName: lNameCtrl.text,
+                            suffix: suffixCtrl.text,
+                            phone: phoneCtrl.text, 
+                            // birthdate: birthdate, 
+                            // sex: sex
+                          );
+
+                          if (!mounted) return;
+
+                          setState(() {
+                            userData['firstName'] = fNameCtrl.text;
+                            userData['middleName'] = mNameCtrl.text;
+                            userData['lastName'] = lNameCtrl.text;
+                            userData['suffix'] = suffixCtrl.text;
+                            userData['phone'] = phoneCtrl.text;
+                          });
+
                         } else if (section == "Address") {
+                          await _residentService.updateAddress(
+                                  houseNo: houseCtrl.text,
+                                  street: streetCtrl.text,
+                                  barangay: brgyCtrl.text,
+                                  city: cityCtrl.text,
+                                  province: provCtrl.text,
+                                  region: "",
+                                  postalCode: zipCtrl.text,
+                                  landmark: landmarkCtrl.text,
+                          );
+
+                          if (!mounted) return;
+
+                          setState(() {
                           userData['houseNo'] = houseCtrl.text;
                           userData['street'] = streetCtrl.text;
                           userData['barangay'] = brgyCtrl.text;
@@ -216,24 +261,63 @@ class _ProfilePageState extends State<ProfilePage> {
                           userData['province'] = provCtrl.text;
                           userData['postalCode'] = zipCtrl.text;
                           userData['landmark'] = landmarkCtrl.text;
+                          });
                         } else if (section == "Household Info") {
-                          userData['householdSize'] = tempSize;
-                          userData['children'] = tempChildren;
-                          userData['elderly'] = tempElderly;
-                          userData['disabled'] = tempDisabled;
-                          userData['pets'] = petsCtrl.text;
+                           await _residentService.updateHousehold(
+                                  householdSize: tempSize,
+                                  children: tempChildren,
+                                  elderly: tempElderly,
+                                  disabled: tempDisabled,
+                                  pets: petsCtrl.text,
+                                );
+
+                            if (!mounted) return;
+
+                          setState(() {
+                                  userData['householdSize'] = tempSize;
+                                  userData['children'] = tempChildren;
+                                  userData['elderly'] = tempElderly;
+                                  userData['disabled'] = tempDisabled;
+                                  userData['pets'] = petsCtrl.text;
+                                });
                         } else if (section == "Medical Profile") {
-                          userData['conditions'] = condCtrl.text;
-                          userData['history'] = histCtrl.text;
-                          userData['allergies'] = allergyCtrl.text;
-                          userData['medications'] = medCtrl.text;
+                          await _residentService.updateMedicalProfile(
+                                  conditions: condCtrl.text,
+                                  history: histCtrl.text,
+                                  allergies: allergyCtrl.text,
+                                  medications: medCtrl.text,
+                                );
+
+                                if (!mounted) return;
+
+                                setState(() {
+                                  userData['conditions'] = condCtrl.text;
+                                  userData['history'] = histCtrl.text;
+                                  userData['allergies'] = allergyCtrl.text;
+                                  userData['medications'] = medCtrl.text;
+                                });
                         }
-                      });
-                      Navigator.pop(context);
-                    },
-                    child: const Text("Update Profile",
-                        style: TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold)),
+
+                      if (!mounted) return;
+
+                      navigator.pop();
+
+                      messenger.showSnackBar(
+                                const SnackBar(
+                                    content: Text("Profile updated successfully")),
+                      );
+                      }catch (e) {
+                        if (!mounted) return;
+                              messenger.showSnackBar(
+                                SnackBar(content: Text("Error: $e")),
+                              );
+                            } finally {
+                              if (mounted) { setState(() => isLoading = false);}
+                            }
+                          },
+                    child: isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text("Save Changes"),
                   ),
                 ),
               ],
@@ -341,7 +425,7 @@ class _ProfilePageState extends State<ProfilePage> {
           _buildCountItem("Children", userData['children']),
           _buildCountItem("Elderly", userData['elderly']),
           _buildCountItem("Disabled", userData['disabled']),
-          _buildCountItem("Pets", userData['pets']),
+          _buildCountItem("Pets", userData['pets'].toString()),
         ],
       ),
     );

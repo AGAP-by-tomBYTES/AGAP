@@ -5,8 +5,6 @@ import 'package:agap/features/resident/pages/emergency_hotlines.dart';
 import 'package:agap/features/resident/widgets/resident_header.dart';
 import 'package:agap/features/resident/widgets/bottom_navbar.dart';
 
-
-
 class ResidentDashboardPage extends StatefulWidget {
   const ResidentDashboardPage({super.key});
 
