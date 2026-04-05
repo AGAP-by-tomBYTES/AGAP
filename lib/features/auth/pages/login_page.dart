@@ -262,10 +262,43 @@ class _LoginPageState extends State<LoginPage> {
       }
 
       //navigate based on role
+      final user = authService.currentUser;
+      final userId = user?.id;
+
+      if (userId == null) {
+        throw Exception("User not found");
+      }
+
       if (widget.role == UserRole.resident) {
+
+        final resident = await SupabaseService.client
+          .from('resident').select()
+          .eq('id', userId).maybeSingle();
+        
+        if (resident == null) {
+          debugPrint("LoginPage: not a resident -> sign out");
+
+          await authService.signOut();
+
+          throw Exception("This account is not registered as a resident");
+        }
+
         debugPrint("LoginPage: Navigating to /resident");
         NavigationService.pushReplacement(Routes.residentDashboard);
+
       } else {
+        
+        final responder = await SupabaseService.client.from('responder')
+                                .select().eq('id', userId).maybeSingle();
+
+        if (responder == null) {
+          debugPrint ("LoginPage: user is not a responder -> signing out");
+
+          await authService.signOut();
+
+          throw Exception("This account is not registered as a responder.");
+        }
+
         debugPrint("LoginPage: Navigating to /responder");
 
         final responderService = ResponderService();
@@ -287,6 +320,8 @@ class _LoginPageState extends State<LoginPage> {
       debugPrint("LoginPage: Error -> $e");
 
       final message = _mapError(e.toString());
+      
+      if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(message)),
@@ -313,4 +348,4 @@ class _LoginPageState extends State<LoginPage> {
     }
     return "Login failed. Try again.";
   }
-}
+} 

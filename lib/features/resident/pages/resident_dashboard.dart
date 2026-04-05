@@ -1,9 +1,13 @@
+import 'package:flutter/material.dart';
+
+import 'package:agap/theme/theme.dart';
+
+import 'package:agap/features/auth/services/auth_service.dart';
 import 'package:agap/features/resident/pages/family_members.dart';
 import 'package:agap/features/resident/pages/resident_profile.dart';
 import 'package:agap/features/resident/pages/send_sos.dart';
 import 'package:agap/features/resident/pages/emergency_hotlines.dart';
-import 'package:flutter/material.dart';
-import 'package:agap/theme/color.dart';
+
 
 class ResidentDashboardPage extends StatefulWidget {
   const ResidentDashboardPage({super.key});
@@ -14,6 +18,24 @@ class ResidentDashboardPage extends StatefulWidget {
 
 class _ResidentDashboardPageState extends State<ResidentDashboardPage> {
   int _selectedIndex = 0; // Home is active
+
+  Map<String, dynamic>? resident;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadResident();
+  }
+
+  Future<void> _loadResident() async {
+    final data = await AuthService().getCurrentResident();
+
+    setState(() {
+      resident = data;
+      isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,8 +63,8 @@ class _ResidentDashboardPageState extends State<ResidentDashboardPage> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Hi, Eleah',
+                      Text(
+                        isLoading ? 'Loading...' : 'Hi, ${resident?['first_name'] ?? 'User'}',
                         style: TextStyle(
                           fontSize: 26,
                           fontWeight: FontWeight.bold,
@@ -51,7 +73,7 @@ class _ResidentDashboardPageState extends State<ResidentDashboardPage> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Philadelphia St., Bagumbayan, Iloilo, PH',
+                        isLoading ? '' : '${resident?['street'] ?? ''}, ${resident?['barangay'] ?? ''}, ${resident?['city'] ?? ''}',
                         style: TextStyle(
                           fontSize: 11,
                           color: Colors.white.withValues(alpha: 0.9),

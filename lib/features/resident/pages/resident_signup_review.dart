@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:agap/features/resident/models/resident_data.dart';
 import 'package:agap/features/auth/services/auth_service.dart';
-import 'resident_test_page.dart';
 import 'package:agap/features/auth/widgets/signup_step_header.dart';
+import 'package:agap/core/routes/screen_routes.dart';
 
 class ResidentSignupReviewPage extends StatelessWidget {
   final ResidentData data;
@@ -11,7 +11,7 @@ class ResidentSignupReviewPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final repo = AuthService();
+    final auth = AuthService();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -132,15 +132,23 @@ class ResidentSignupReviewPage extends StatelessWidget {
                   Expanded(
                     child: FilledButton(
                       onPressed: () async {
-                        await repo.signUpResident(data);
-                        if (!context.mounted) return;
+                        try {
+                          final success = await auth.signUpResident(data);
 
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const ResidentTestPage(),
-                          ),
-                        );
+                          if (!context.mounted) return;
+
+                          if (success) {
+                            debugPrint("Signup successful. Navigating to dashboard");
+                            
+                            Navigator.pushReplacementNamed(context, Routes.residentDashboard);
+                          }         
+                        } catch (e) {
+                          debugPrint("Signup error: $e");
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                             SnackBar(content: Text(e.toString())),
+                          );
+                        }
                       },
                       style: FilledButton.styleFrom(
                         backgroundColor: const Color(0xFF0D47A1), // 🔵 DARK BLUE
