@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:agap/features/auth/widgets/login_header.dart';
-import 'package:agap/features/responder/widgets/signup_field.dart';
+import 'package:agap/features/auth/widgets/signup_field.dart';
 import 'package:agap/theme/color.dart';
 import 'package:agap/theme/typography.dart';
 

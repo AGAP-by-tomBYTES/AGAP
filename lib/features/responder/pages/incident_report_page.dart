@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart' as pdf;
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:agap/features/responder/data/responder_dashboard_data.dart';
 import 'package:agap/theme/color.dart';
@@ -72,12 +71,6 @@ class _IncidentReportPageState extends State<IncidentReportPage> {
   final _temperatureController = TextEditingController();
   final _painController = TextEditingController();
   final _gcsController = TextEditingController();
-
-  // Search state
-  List<Map<String, dynamic>> _searchResults = [];
-  bool _isSearching = false;
-  bool _showSearchResults = false;
-  final _searchFocusNode = FocusNode();
 
   int _currentStep = 0;
   bool _markAddressSame = true;
@@ -193,7 +186,6 @@ class _IncidentReportPageState extends State<IncidentReportPage> {
     ]) {
       controller.dispose();
     }
-    _searchFocusNode.dispose();
     super.dispose();
   }
 
@@ -526,192 +518,11 @@ class _IncidentReportPageState extends State<IncidentReportPage> {
         children: [
           const _SectionTitle('Patient Information'),
           const SizedBox(height: 14),
-          // --- Live resident search ---
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Search patient name',
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _searchController,
-                focusNode: _searchFocusNode,
-                onChanged: _onSearchChanged,
-                onTap: () {
-                  if (_searchController.text.trim().isNotEmpty) {
-                    setState(() => _showSearchResults = true);
-                  }
-                },
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-                decoration: InputDecoration(
-                  hintText: 'Type to search residents...',
-                  hintStyle: const TextStyle(
-                    color: AppColors.inputHint,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textMuted),
-                  suffixIcon: _isSearching
-                      ? const Padding(
-                          padding: EdgeInsets.all(12),
-                          child: SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: AppColors.agapOrangeDeep,
-                            ),
-                          ),
-                        )
-                      : _searchController.text.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.close_rounded, color: AppColors.textMuted),
-                              onPressed: () {
-                                setState(() {
-                                  _searchController.clear();
-                                  _searchResults = [];
-                                  _showSearchResults = false;
-                                });
-                              },
-                            )
-                          : null,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 16,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(color: AppColors.border, width: 1.2),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(
-                      color: AppColors.agapOrangeDeep,
-                      width: 1.4,
-                    ),
-                  ),
-                ),
-              ),
-              if (_showSearchResults && _searchResults.isNotEmpty)
-                Container(
-                  margin: const EdgeInsets.only(top: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: AppColors.border, width: 1.2),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: AppColors.shadow,
-                        blurRadius: 12,
-                        offset: Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(vertical: 6),
-                    itemCount: _searchResults.length,
-                    separatorBuilder: (_, index) =>
-                        const Divider(height: 1, indent: 16, endIndent: 16),
-                    itemBuilder: (context, index) {
-                      final resident = _searchResults[index];
-                      final fullName = _buildFullName(resident);
-                      final barangay = resident['barangay'] as String? ?? '';
-                      final municipality = resident['municipality'] as String? ?? '';
-                      final location = [barangay, municipality]
-                          .where((s) => s.isNotEmpty)
-                          .join(', ');
-
-                      return InkWell(
-                        onTap: () => _selectResident(resident),
-                        borderRadius: BorderRadius.circular(10),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          child: Row(
-                            children: [
-                              const CircleAvatar(
-                                radius: 18,
-                                backgroundColor: Color(0xFFFFEFE9),
-                                child: Icon(
-                                  Icons.person_rounded,
-                                  size: 18,
-                                  color: AppColors.agapOrangeDeep,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      fullName,
-                                      style: const TextStyle(
-                                        color: AppColors.textPrimary,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                    if (location.isNotEmpty) ...[
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        location,
-                                        style: const TextStyle(
-                                          color: AppColors.textMuted,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                              const Icon(
-                                Icons.arrow_forward_ios_rounded,
-                                size: 14,
-                                color: AppColors.textMuted,
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              if (_showSearchResults && _searchResults.isEmpty && !_isSearching && _searchController.text.trim().length >= 2)
-                Container(
-                  margin: const EdgeInsets.only(top: 4),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: AppColors.border, width: 1.2),
-                  ),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.search_off_rounded, color: AppColors.textMuted, size: 18),
-                      SizedBox(width: 10),
-                      Text(
-                        'No residents found',
-                        style: TextStyle(
-                          color: AppColors.textMuted,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-            ],
+          _ReportTextField(
+            label: 'Search patient name',
+            hint: 'Search patient name',
+            controller: _searchController,
+            prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textMuted),
           ),
           const SizedBox(height: 18),
           _ReportTextField(
@@ -1199,117 +1010,6 @@ class _IncidentReportPageState extends State<IncidentReportPage> {
       ],
     );
   }
-
-  // ── Resident search ──────────────────────────────────────────────────────
-
-  Future<void> _onSearchChanged(String query) async {
-    final trimmed = query.trim();
-    if (trimmed.length < 2) {
-      setState(() {
-        _searchResults = [];
-        _showSearchResults = false;
-        _isSearching = false;
-      });
-      return;
-    }
-
-    setState(() {
-      _isSearching = true;
-      _showSearchResults = true;
-    });
-
-    try {
-      final client = Supabase.instance.client;
-      // Search across first_name, last_name; ilike for case-insensitive partial match
-      final results = await client
-          .from('resident')
-          .select(
-            'id, first_name, middle_name, last_name, suffix, phone, birthdate, sex, '
-            'house_no, street, barangay, municipality, city, province, postal_code, '
-            'allergies, medications, conditions, history',
-          )
-          .or('first_name.ilike.%$trimmed%,last_name.ilike.%$trimmed%')
-          .limit(8);
-
-      if (!mounted) return;
-      setState(() {
-        _searchResults = List<Map<String, dynamic>>.from(results);
-        _isSearching = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _searchResults = [];
-        _isSearching = false;
-      });
-    }
-  }
-
-  void _selectResident(Map<String, dynamic> resident) {
-    final nameParts = _splitPatientName(_buildFullName(resident));
-
-    // Build address string from individual fields
-    final addressParts = [
-      resident['house_no'] as String? ?? '',
-      resident['street'] as String? ?? '',
-      resident['barangay'] as String? ?? '',
-      resident['municipality'] as String? ?? '',
-      resident['city'] as String? ?? '',
-      resident['province'] as String? ?? '',
-    ].where((s) => s.trim().isNotEmpty).toList();
-    final address = addressParts.join(', ');
-
-    // Compute age from birthdate if available
-    String age = '';
-    final birthdate = resident['birthdate'] as String?;
-    if (birthdate != null && birthdate.isNotEmpty) {
-      try {
-        final dob = DateTime.parse(birthdate);
-        final now = DateTime.now();
-        int computed = now.year - dob.year;
-        if (now.month < dob.month ||
-            (now.month == dob.month && now.day < dob.day)) {
-          computed--;
-        }
-        age = computed.toString();
-      } catch (_) {}
-    }
-
-    setState(() {
-      _searchController.text = _buildFullName(resident);
-      _patientNameController.text = nameParts.lastName;
-      _patientFirstNameController.text = nameParts.firstName;
-      _patientMiController.text = nameParts.middleInitial;
-      _addressController.text = address;
-      _ageController.text = age;
-      _sexController.text = resident['sex'] as String? ?? '';
-      _contactController.text = resident['phone'] as String? ?? '';
-      _allergiesController.text = resident['allergies'] as String? ?? '';
-      _medicationsController.text = resident['medications'] as String? ?? '';
-      _historyController.text = resident['history'] as String? ?? '';
-
-      // Sync location if "same as address" is toggled
-      if (_markAddressSame && address.isNotEmpty) {
-        _locationController.text = address;
-      }
-
-      _searchResults = [];
-      _showSearchResults = false;
-    });
-
-    _searchFocusNode.unfocus();
-  }
-
-  String _buildFullName(Map<String, dynamic> resident) {
-    return [
-      resident['first_name'] as String? ?? '',
-      resident['middle_name'] as String? ?? '',
-      resident['last_name'] as String? ?? '',
-      resident['suffix'] as String? ?? '',
-    ].where((s) => s.trim().isNotEmpty).join(' ').trim();
-  }
-
-  // ─────────────────────────────────────────────────────────────────────────
 
   void _handleBack() {
     if (_currentStep == 0) {
@@ -2065,6 +1765,7 @@ class _ReportTextField extends StatelessWidget {
     this.hint,
     this.validator,
     this.maxLines = 1,
+    this.prefixIcon,
   });
 
   final String label;
@@ -2072,6 +1773,7 @@ class _ReportTextField extends StatelessWidget {
   final String? hint;
   final String? Function(String?)? validator;
   final int maxLines;
+  final Widget? prefixIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -2098,6 +1800,7 @@ class _ReportTextField extends StatelessWidget {
           ),
           decoration: InputDecoration(
             hintText: hint,
+            prefixIcon: prefixIcon,
             hintStyle: const TextStyle(
               color: AppColors.inputHint,
               fontWeight: FontWeight.w600,

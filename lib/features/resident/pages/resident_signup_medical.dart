@@ -1,11 +1,11 @@
 import 'package:agap/theme/color.dart';
 import 'package:flutter/material.dart';
-import '../data/resident_signup_data.dart';
+import 'package:agap/features/resident/models/resident_data.dart';
 import 'resident_signup_review.dart';
-import 'package:agap/features/responder/widgets/signup_step_header.dart';
+import 'package:agap/features/auth/widgets/signup_step_header.dart';
 
 class ResidentSignupMedicalPage extends StatefulWidget {
-  final ResidentSignupData data;
+  final ResidentData data;
 
   const ResidentSignupMedicalPage({super.key, required this.data});
 
@@ -31,11 +31,53 @@ class _ResidentSignupMedicalPageState
     _medications.text = widget.data.medications ?? '';
   }
 
-  void _next() {
-    widget.data.conditions = _conditions.text;
-    widget.data.history = _history.text;
-    widget.data.allergies = _allergies.text;
-    widget.data.medications = _medications.text;
+void _next() {
+  debugPrint("User tapped continue on medical step");
+
+  debugPrint("Collected medical inputs");
+  debugPrint("Conditions is ${_conditions.text}");
+  debugPrint("History is ${_history.text}");
+  debugPrint("Allergies is ${_allergies.text}");
+  debugPrint("Medications is ${_medications.text}");
+
+  final updatedData = ResidentData(
+    email: widget.data.email,
+    password: widget.data.password,
+    firstName: widget.data.firstName,
+    middleName: widget.data.middleName,
+    lastName: widget.data.lastName,
+    suffix: widget.data.suffix,
+    phone: widget.data.phone,
+    birthdate: widget.data.birthdate,
+    sex: widget.data.sex,
+
+    houseNo: widget.data.houseNo,
+    street: widget.data.street,
+    barangay: widget.data.barangay,
+    municipality: widget.data.municipality,
+    city: widget.data.city,
+    province: widget.data.province,
+    region: widget.data.region,
+    postalCode: widget.data.postalCode,
+    landmark: widget.data.landmark,
+
+    householdSize: widget.data.householdSize,
+    children: widget.data.children,
+    elderly: widget.data.elderly,
+    disabled: widget.data.disabled,
+    pets: widget.data.pets,
+
+    conditions: _conditions.text.trim().isEmpty ? null : _conditions.text.trim(),
+    history: _history.text.trim().isEmpty ? null : _history.text.trim(),
+    allergies: _allergies.text.trim().isEmpty ? null : _allergies.text.trim(),
+    medications: _medications.text.trim().isEmpty ? null : _medications.text.trim(),
+  );
+
+  debugPrint("Updated ResidentData after medical step");
+  debugPrint(updatedData.toJson().toString());
+
+  debugPrint("Medical step completed and ready for next step or database insert");
+
 
     Navigator.push(
       context,

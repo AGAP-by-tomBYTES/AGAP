@@ -1,60 +1,66 @@
 import 'package:flutter/material.dart';
+
+import 'package:agap/features/auth/user_role.dart';
+
 import 'package:agap/features/auth/widgets/role_card.dart';
 import 'package:agap/features/auth/widgets/role_screen_background.dart';
 import 'package:agap/features/auth/widgets/role_screen_footer.dart';
-import 'package:agap/features/auth/pages/login_page.dart';
-import 'package:agap/features/resident/pages/resident_signup.dart';
 import 'package:agap/theme/color.dart';
+import 'package:agap/core/routes/screen_routes.dart';
+import 'package:agap/core/services/navigation_service.dart';
 
 class RoleScreen extends StatelessWidget {
   const RoleScreen({super.key});
 
+  void _selectRole(BuildContext context, UserRole role) {
+    debugPrint("RoleScreen: Role selected -> $role");
+    debugPrint("Navigating to /login with role");
+
+    NavigationService.pushNamed(Routes.login, arguments: role);
+  }
+
   @override
   Widget build(BuildContext context) {
+    debugPrint("RoleScreen: build() called");
+
     return Scaffold(
       backgroundColor: AppColors.agapOrange.withValues(alpha: 0.50),
       body: Stack(
         children: [
           const RoleScreenBackground(),
+
           SafeArea(
             child: Center(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const SizedBox(height: 110),
+
+                  //RESPONDER
                   RoleCard(
                     title: "I'm a Responder",
                     subtitle: '*For MDRRMO responders',
                     backgroundColor: AppColors.agapDark,
                     onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => const LoginPage(
-                            roleLabel: 'Responder',
-                            // changed from employee to id kasi supabase needs an email for logging in 
-                            idLabel: 'Email',
-                            idHint: 'Enter your email address',
-                          ),
-                        ),
-                      );
+                      _selectRole(context, UserRole.responder);
                     },
                   ),
+
                   const Spacer(),
                   const Spacer(),
-                  
+
+                  //RESIDENT
                   RoleCard(
                     title: "I'm a Resident",
                     subtitle: '*For residents',
                     backgroundColor: AppColors.agapOrange,
                     onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => const ResidentSignupPage(),
-                        ),
-                      );
+                      _selectRole(context, UserRole.resident);
                     },
                   ),
+
                   const Spacer(),
+
                   const RoleScreenFooter(),
                 ],
               ),
@@ -64,5 +70,4 @@ class RoleScreen extends StatelessWidget {
       ),
     );
   }
-
 }

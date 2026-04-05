@@ -1,31 +1,28 @@
+//dependencies
 import 'package:flutter/material.dart';
+import 'dart:async';
+import 'package:hive/hive.dart';
 
-import 'package:agap/config/app_config.dart';
-import 'package:agap/features/auth/pages/forgot_password_page.dart';
-import 'package:agap/features/auth/widgets/login_button.dart';
-import 'package:agap/features/auth/widgets/login_header.dart';
+import 'package:agap/theme/theme.dart';
+import 'package:agap/features/auth/widgets/widgets.dart';
+
+import 'package:agap/features/auth/services/auth_service.dart';
+import 'package:agap/features/auth/user_role.dart';
+import 'package:agap/core/services/navigation_service.dart';
+import 'package:agap/core/routes/screen_routes.dart';
+import 'package:agap/core/services/supabase_service.dart';
+import 'package:agap/features/responder/data/responder_service.dart';
 import 'package:agap/features/responder/data/responder_dashboard_data.dart';
 import 'package:agap/features/responder/data/responder_dashboard_preview_data.dart';
-import 'package:agap/features/responder/data/responder_repository.dart';
-import 'package:agap/features/responder/pages/normal_dashboard_page.dart';
-import 'package:agap/features/responder/pages/signup.dart';
-import 'package:agap/features/responder/widgets/auth_switch_prompt.dart';
-import 'package:agap/features/responder/widgets/signup_field.dart';
-import 'package:agap/theme/color.dart';
-import 'package:agap/theme/typography.dart';
-import 'package:agap/features/services/weather.dart';
 
+
+//login page
+//email and password - supabase aligned auth
+//role based navigation with error handling
 class LoginPage extends StatefulWidget {
-  const LoginPage({
-    super.key,
-    required this.roleLabel,
-    required this.idLabel,
-    required this.idHint,
-  });
+  final UserRole role;
 
-  final String roleLabel;
-  final String idLabel;
-  final String idHint;
+  const LoginPage({super.key, required this.role});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -33,29 +30,56 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final _scrollController = ScrollController();
-  final _idController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _repository = ResponderRepository();
+  final _scrollController = ScrollController();
+
+
   bool _isPasswordHidden = true;
-  bool _isSubmitting = false;
+  bool _isLoading = false;
+  bool _rememberMe = false;
+
+  final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
+
+  @override
+  void initState() {
+    super.initState();
+    debugPrint("LoginPage: initState called");
+    _loadRememberedUser();
+  }
+
+  void _loadRememberedUser() {
+    debugPrint("LoginPage: Loading remembered user");
+
+    final box = Hive.box("app_cache");
+    final email = box.get("remember_email");
+
+    if (email != null) {
+      debugPrint("LoginPage: Found remembered email");
+      _emailController.text = email;
+      _rememberMe = true;
+    }
+  }
 
   @override
   void dispose() {
-    _scrollController.dispose();
-    _idController.dispose();
+    debugPrint("LoginPage: dispose called");
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    debugPrint("LoginPage: build() called with role: ${widget.role}");
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
-            LoginHeader(roleLabel: widget.roleLabel),
+            LoginHeader(roleLabel: widget.role == UserRole.resident ? "Resident" : " Responder"),
+
             Expanded(
               child: Scrollbar(
                 controller: _scrollController,
@@ -69,241 +93,224 @@ class _LoginPageState extends State<LoginPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // EMAIL
                         SignupField(
-                          label: widget.idLabel,
-                          hint: widget.idHint,
-                          controller: _idController,
+                          label: "Email",
+                          hint: "Enter your email",
+                          controller: _emailController,
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
-                              return 'Required';
+                              return "Email is required";
+                            }
+                            if (!emailRegex.hasMatch(value)) {
+                              return "Invalid email format";
                             }
                             return null;
                           },
                         ),
-                        const SizedBox(height: 18),
-                        SignupField(
-                          label: 'Password',
-                          controller: _passwordController,
-                          obscureText: _isPasswordHidden,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Required';
-                            }
-                            return null;
+
+                      const SizedBox(height: 18),
+
+                      // PASSWORD
+                      SignupField(
+                        label: "Password",
+                        controller: _passwordController,
+                        obscureText: _isPasswordHidden,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Password is required";
+                          }
+                          return null;
+                        },
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            debugPrint("LoginPage: Toggle password visibility");
+                            setState(() {
+                              _isPasswordHidden = !_isPasswordHidden;
+                            });
                           },
-                          suffixIcon: IconButton(
-                            onPressed: () {
-                              setState(() {
-                                _isPasswordHidden = !_isPasswordHidden;
-                              });
-                            },
-                            icon: Icon(
-                              _isPasswordHidden
-                                  ? Icons.visibility_off_outlined
-                                  : Icons.visibility_outlined,
-                              color: AppColors.textMuted,
-                            ),
+                          icon: Icon(
+                            _isPasswordHidden
+                                ? Icons.visibility_off_outlined
+                                : Icons.visibility_outlined,
+                            color: AppColors.textMuted,
                           ),
                         ),
-                        const SizedBox(height: 10),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      //REMEMBER ME
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Checkbox(
+                                value: _rememberMe,
+                                onChanged: (val) {
+                                  debugPrint("LoginPage: Remember me -> $val");
+                                  setState(() {
+                                    _rememberMe = val ?? false;
+                                  });
+                                },
+                              ),
+                              const Text("Remember Me"),
+                            ],
+                          ),
+
+                          //Forgot Password
+                          TextButton(
                             onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute<void>(
-                                  builder: (_) => ForgotPasswordPage(
-                                    roleLabel: widget.roleLabel,
-                                    idLabel: widget.idLabel,
-                                    idHint: widget.idHint,
-                                  ),
-                                ),
-                              );
+                              //TO DO()
+                              // NavigationService.pushReplacement(Routes.forgotpassword);
                             },
                             child: Text(
-                              'Forgot Password?',
+                              "Forgot Password?",
                               style: AppTypography.buttonLink.copyWith(
                                 color: AppColors.agapOrangeDeep,
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 14),
-                        Center(
-                          child: IgnorePointer(
-                            ignoring: _isSubmitting,
-                            child: Opacity(
-                              opacity: _isSubmitting ? 0.72 : 1,
-                              child: LoginButton(
-                                onPressed: _handleLogin,
-                              ),
-                            ),
-                          ),
-                        ),
-                        if (_isSubmitting) ...[
-                          const SizedBox(height: 14),
-                          const Center(
-                            child: SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.4,
-                                color: AppColors.agapOrangeDeep,
-                              ),
-                            ),
-                          ),
                         ],
-                        const SizedBox(height: 18),
-                        AuthSwitchPrompt(
-                          promptText: "Don’t have an account? ",
-                          actionText: 'Sign Up',
-                          onTap: () {
-                            if (widget.roleLabel == 'Responder' &&
-                                !AppConfig.isSupabaseConfigured) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Responder signup requires a .env file with Supabase keys.',
-                                  ),
-                                  behavior: SnackBarBehavior.floating,
-                                ),
-                              );
-                              return;
-                            }
+                      ),
 
-                            Navigator.of(context).push(
-                              MaterialPageRoute<void>(
-                                builder: (_) => const ResponderSignupPage(),
-                              ),
-                            );
-                          },
+                      const SizedBox(height: 14),
+
+                      //LOGIN Button
+                      Center(
+                        child: LoginButton(
+                              isLoading: _isLoading,
+                              onPressed: _isLoading ? null : _handleLogin,
                         ),
-                      ],
-                    ),
+                      ),
+
+                      const SizedBox(height: 18),
+
+                      AuthSwitchPrompt(
+                        promptText: "Don't have an account? ",
+                        actionText: "Sign Up",
+                        onTap: () {
+                          debugPrint("LoginPage: Navigate to signup");
+
+                          if (widget.role == UserRole.responder && !SupabaseService.isInitialized) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text (
+                                  "Resident signup requires a .env file with Supabase keys.",
+                                ),
+                                behavior: SnackBarBehavior.floating
+                              )
+                            );
+                            return;
+                          }
+
+                          if (widget.role == UserRole.resident) {
+                            NavigationService.pushReplacement(Routes.residentSignupPage1, arguments: widget.role);
+                          } else {
+                            NavigationService.pushReplacement(Routes.responderSignupPage, arguments: widget.role);
+                          }
+                        }
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ),
-          ],
-        ),
+            )
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Future<void> _handleLogin() async {
+    debugPrint("LoginPage: Login button pressed");
+
     if (!_formKey.currentState!.validate()) {
+      debugPrint("LoginPage: Validation failed");
       return;
     }
 
-    if (widget.roleLabel != 'Responder') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Resident dashboard routing is not set up yet.'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return;
-    }
-
-    setState(() {
-      _isSubmitting = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
-      final dashboardData = await _resolveResponderDashboardData();
-      if (!mounted) return;
+      final authService = AuthService();
 
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute<void>(
-          builder: (_) => ResponderNormalDashboardPage(data: dashboardData),
-        ),
+      debugPrint("LoginPage: Attempting sign in");
+
+      await authService.signIn(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
       );
-    } catch (error) {
-      debugPrint('LOGIN ERROR: $error'); 
-      if (!mounted) return;
+
+      debugPrint("LoginPage: Login successful");
+
+      // REMEMBER ME
+      final box = Hive.box("app_cache");
+      if (_rememberMe) {
+        debugPrint("LoginPage: Saving email");
+        box.put("remember_email", _emailController.text.trim());
+      } else {
+        debugPrint("LoginPage: Removing saved email");
+        box.delete("remember_email");
+      }
+
+      if (!mounted) {
+        debugPrint("LoginPage: Not mounted, abort navigation");
+        return;
+      }
+
+      //navigate based on role
+      if (widget.role == UserRole.resident) {
+        debugPrint("LoginPage: Navigating to /resident");
+        NavigationService.pushReplacement(Routes.residentDashboard);
+      } else {
+        debugPrint("LoginPage: Navigating to /responder");
+
+        final responderService = ResponderService();
+        
+        ResponderDashboardData data;
+        
+        try {
+          data = await responderService.getDashboardData();
+        } catch (e) {
+          debugPrint("Fallback to preview data: $e");
+          data = responderDashboardPreviewData;
+        }
+
+        if (!mounted) return;
+        NavigationService.pushReplacement(Routes.responderDashboard,arguments: data);
+      }
+
+    } catch (e) {
+      debugPrint("LoginPage: Error -> $e");
+
+      final message = _mapError(e.toString());
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Login failed: $error'),
-          behavior: SnackBarBehavior.floating,
-        ),
+        SnackBar(content: Text(message)),
       );
     } finally {
-      if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-        });
-      }
+      setState(() => _isLoading = false);
     }
   }
 
-  Future<ResponderDashboardData> _resolveResponderDashboardData() async {
-    if (!AppConfig.isSupabaseConfigured) {
-      return responderDashboardPreviewData;
+  //login errors
+  String _mapError(String error) {
+    debugPrint("LoginPage: Mapping error -> $error");
+
+    if (error.contains("Invalid login credentials")) {
+      return "Wrong email or password";
+    } else if (error.contains("Email not confirmed")) {
+      return "Please verify your email first";
+    } else if (error.contains("network")) {
+      return "Network error. Check your internet connection.";
+    } else if (error.contains("timeout")) {
+      return "Login request timed out. Try again.";
+    } else if (error.contains("supabase")) {
+      return "Server error. Please try again later.";
     }
-
-    final email    = _idController.text.trim();
-    final password = _passwordController.text.trim();
-
-    await _repository.signIn(email: email, password: password);
-
-    final responder = await _repository.getCurrentResponder();
-    if (responder == null) {
-      throw Exception('Responder profile not found. Contact your administrator.');
-    }
-
-    return await _buildDashboardData(responder); // no longer needs await change — it's already awaited by the caller
-  }
-
-  //   await _repository.signIn(
-  //     email: identifier,
-  //     password: password,
-  //   );
-
-  //   final responder = await _repository.getCurrentResponder();
-  //     if (responder == null) {
-  //       throw Exception('Responder profile not found. Contact your administrator.');
-  //     }
-  //     return _buildDashboardData(responder);
-  // }
-  
-
-  Future<ResponderDashboardData> _buildDashboardData(
-      Map<String, dynamic> responder) async {
-    final firstName  = responder['first_name']  as String? ?? '';
-    final middleName = responder['middle_name'] as String? ?? '';
-    final lastName   = responder['last_name']   as String? ?? '';
-
-    final fullName = [
-      firstName,
-      if (middleName.trim().isNotEmpty) middleName,
-      lastName,
-    ].where((part) => part.trim().isNotEmpty).join(' ').trim();
-
-    Map<String, String> advisory;
-    try {
-      advisory = await WeatherService().getWeatherAdvisory();
-      debugPrint(' WEATHER SUCCESS: $advisory');
-    } catch (e) {
-      debugPrint(' WEATHER ERROR: $e');
-      advisory = {
-        'title': 'Weather Advisory',
-        'message': 'Unable to fetch live weather data.',
-      };
-    }
-
-    return ResponderDashboardData(
-      profile: ResponderProfileData(
-        name: fullName.isEmpty ? 'Responder' : fullName,
-        teamAndStationLabel: 'Team Alpha – Miagao Station',
-      ),
-      alertSummary: responderDashboardPreviewData.alertSummary,
-      teamStation: responderDashboardPreviewData.teamStation,
-      weatherAdvisory: WeatherAdvisoryData(
-        title: advisory['title']!,
-        message: advisory['message']!,
-      ),
-      resolvedAlerts: responderDashboardPreviewData.resolvedAlerts,
-      emergencyDispatch: responderDashboardPreviewData.emergencyDispatch,
-    );
+    return "Login failed. Try again.";
   }
 }

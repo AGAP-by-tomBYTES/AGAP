@@ -3,12 +3,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:agap/features/responder/data/responder_dashboard_data.dart';
 import 'package:agap/features/responder/data/responder_dashboard_preview_data.dart';
-import 'package:agap/features/services/weather.dart';
+import 'package:agap/core/services/weather.dart';
 
-class ResponderRepository {
+class ResponderService {
   SupabaseClient get _client => Supabase.instance.client;
 
-  Future<void> signUp({
+  Future<void> signUpResponder({
     required String email,
     required String password,
     required String firstName,

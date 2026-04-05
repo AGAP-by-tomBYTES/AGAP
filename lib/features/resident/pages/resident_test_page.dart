@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../data/resident_repository.dart';
+import 'package:agap/features/auth/services/auth_service.dart';
 
 class ResidentTestPage extends StatefulWidget {
   const ResidentTestPage({super.key});
@@ -9,7 +9,7 @@ class ResidentTestPage extends StatefulWidget {
 }
 
 class _ResidentTestPageState extends State<ResidentTestPage> {
-  final _repository = ResidentRepository();
+  final _repository = AuthService();
   Map<String, dynamic>? _resident;
   bool _loading = true;
 
