@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 
-import 'package:agap/theme/theme.dart';
-
 import 'package:agap/features/auth/services/auth_service.dart';
-import 'package:agap/features/resident/pages/family_members.dart';
-import 'package:agap/features/resident/pages/resident_profile.dart';
-import 'package:agap/features/resident/pages/send_sos.dart';
 import 'package:agap/features/resident/pages/emergency_hotlines.dart';
 import 'package:agap/features/resident/widgets/resident_header.dart';
+import 'package:agap/features/resident/widgets/bottom_navbar.dart';
+
 
 
 class ResidentDashboardPage extends StatefulWidget {
@@ -18,7 +15,7 @@ class ResidentDashboardPage extends StatefulWidget {
 }
 
 class _ResidentDashboardPageState extends State<ResidentDashboardPage> {
-  int _selectedIndex = 0; // Home is active
+  final int _selectedIndex = 0; // Home is active
 
   Map<String, dynamic>? resident;
   bool isLoading = true;
@@ -42,7 +39,10 @@ class _ResidentDashboardPageState extends State<ResidentDashboardPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      bottomNavigationBar: _buildBottomBar(),
+      bottomNavigationBar: ResidentBottomNavBar(
+        selectedIndex: _selectedIndex,
+        resident: resident
+      ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,7 +95,7 @@ class _ResidentDashboardPageState extends State<ResidentDashboardPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (_) => const EmergencyHotlinesPage()),
+                            builder: (_) => EmergencyHotlinesPage(resident: resident)),
                       );
                     },
                     child: Container(
@@ -218,111 +218,10 @@ class _ResidentDashboardPageState extends State<ResidentDashboardPage> {
       ),
     );
   }
-
-  Widget _buildBottomBar() {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      height: 65,
-      decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(40),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _navItem(Icons.home, 0, () {
-            // Already on Home
-          }),
-          _navItem(Icons.call, 1, () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => const EmergencyHotlinesPage()),
-              );
-
-              _resetToHome();
-          }),
-          _buildCenterSosButton(),
-          _navItem(Icons.family_restroom_outlined, 3, () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => const FamilyPage()),
-              );
-            _resetToHome();
-          }),
-          _navItem(Icons.person_outline, 4, () {
-             Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => const ProfilePage()),
-              );
-            _resetToHome();
-          }),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCenterSosButton() {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const SosPage()),
-        );
-      },
-      child: Container(
-        width: 55,
-        height: 55,
-        decoration: BoxDecoration(
-          color: AppColors.agapOrangeAlt,
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: AppColors.agapCoral.withValues(alpha: 1),
-            width: 3,
-          ),
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.black26,
-              blurRadius: 8,
-              offset: Offset(0, 4),
-            )
-          ],
-        ),
-        child: const Center(
-          child: Text(
-            "SOS",
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _navItem(IconData icon, int index, VoidCallback onTap) {
-    final isActive = _selectedIndex == index;
-    return GestureDetector(
-      onTap: () {
-        setState(() => _selectedIndex = index);
-        onTap();
-      },
-      child: Icon(
-        icon,
-        size: 28,
-        color: isActive ? AppColors.agapCoral : Colors.black,
-      ),
-    );
-  }
-
     // Helper function to keep it clean
-  void _resetToHome() {
-    setState(() => _selectedIndex = 0);
-  }
+  // void _resetToHome() {
+  //   setState(() => _selectedIndex = 0);
+  // }
   
 }
 

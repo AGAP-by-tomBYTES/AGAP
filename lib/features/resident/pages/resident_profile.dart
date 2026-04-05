@@ -4,9 +4,14 @@ import 'package:agap/features/resident/pages/resident_dashboard.dart';
 import 'package:agap/features/resident/pages/emergency_hotlines.dart';
 import 'package:agap/features/resident/pages/send_sos.dart';
 import 'package:agap/features/resident/pages/family_members.dart';
+import 'package:agap/features/resident/widgets/resident_header.dart';
+import 'package:agap/features/resident/widgets/bottom_navbar.dart';
+
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+  final Map<String, dynamic>? resident;
+  
+  const ProfilePage({super.key, required this.resident});
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -243,45 +248,15 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      bottomNavigationBar: _buildBottomBar(),
+      bottomNavigationBar: ResidentBottomNavBar(
+        selectedIndex: _selectedIndex,
+        resident: widget.resident
+      ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// ISLAND HEADER
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(24, 50, 24, 25),
-              decoration: const BoxDecoration(
-                color: AppColors.agapOrangeDeep,
-                borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(20),
-                    bottomRight: Radius.circular(20)),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Hi, ${userData['firstName']}',
-                          style: const TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white)),
-                      const SizedBox(height: 2),
-                      Text(
-                          '${userData['street']}, ${userData['barangay']}, ${userData['city']}',
-                          style: TextStyle(
-                              fontSize: 11,
-                              color: Colors.white.withValues(alpha: 0.9))),
-                    ],
-                  ),
-                  const Icon(Icons.notifications_none_outlined,
-                      color: Colors.white, size: 28),
-                ],
-              ),
-            ),
+            ResidentHeader(resident: widget.resident, isLoading: false),
 
             Padding(
               padding: const EdgeInsets.all(24.0),
@@ -501,69 +476,6 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
       ),
     );
-  }
-
-  Widget _buildBottomBar() {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      height: 65,
-      decoration: BoxDecoration(
-          color: Colors.grey.shade200, borderRadius: BorderRadius.circular(40)),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _navItem(
-              Icons.home,
-              0,
-              () => Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) => ResidentDashboardPage()))),
-          _navItem(
-              Icons.call,
-              1,
-              () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) => const EmergencyHotlinesPage()))),
-          _buildCenterSosButton(),
-          _navItem(
-              Icons.family_restroom,
-              3,
-              () => Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (_) => const FamilyPage()))),
-          _navItem(Icons.person, 4, () {}),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCenterSosButton() {
-    return GestureDetector(
-      onTap: () => Navigator.push(
-          context, MaterialPageRoute(builder: (_) => const SosPage())),
-      child: Container(
-        width: 55,
-        height: 55,
-        decoration: BoxDecoration(
-            color: AppColors.agapOrangeAlt,
-            shape: BoxShape.circle,
-            border: Border.all(color: AppColors.agapCoral, width: 3)),
-        child: const Center(
-            child: Text("SOS",
-                style: TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.bold))),
-      ),
-    );
-  }
-
-  Widget _navItem(IconData icon, int index, VoidCallback onTap) {
-    return GestureDetector(
-        onTap: onTap,
-        child: Icon(icon,
-            size: 28,
-            color: _selectedIndex == index ? AppColors.agapCoral : Colors.black));
   }
 
   Widget _counterCard(
