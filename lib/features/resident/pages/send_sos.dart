@@ -4,6 +4,9 @@ import 'package:agap/features/resident/pages/family_members.dart';
 import 'package:agap/features/resident/pages/res_dashboard.dart';
 import 'package:agap/features/resident/pages/resident_profile.dart';
 import 'package:agap/features/resident/pages/safe_state.dart';
+import 'package:agap/features/services/nearby_service.dart';
+import 'package:agap/features/services/supabase_service.dart';
+import 'package:agap/features/services/internet_service.dart';
 import 'package:flutter/material.dart';
 import 'package:agap/theme/color.dart';
 import 'danger_page.dart';
@@ -80,10 +83,17 @@ class _SosPageState extends State<SosPage> {
       timestamp: DateTime.now().millisecondsSinceEpoch,
       senderId: deviceId,
       ttl: 5,
+      uploaded: false,
     );
 
     // save
     await AlertDao.insertAlert(alert);
+    await NearbyService.sendToAll(alert.toJson());
+    if (await hasInternet()) {
+      await SupabaseService.uploadAlert(alert);
+    } else {
+      debugPrint('No internet, will retry later via queue.');
+    }
 
     if (!mounted) return;
     

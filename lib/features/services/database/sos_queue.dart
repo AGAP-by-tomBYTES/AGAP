@@ -1,7 +1,10 @@
 import 'dart:async';
 import 'alert_dao.dart';
 import 'package:flutter/foundation.dart';
+import 'package:agap/features/services/models/alert.dart';
 import 'package:agap/features/services/nearby_service.dart';
+import 'package:agap/features/services/internet_service.dart';
+import 'package:agap/features/services/supabase_service.dart';
 
 class SosQueueService {
   static Timer? _timer;
@@ -18,43 +21,79 @@ class SosQueueService {
 
   /// process unforwarded alerts
   static Future<void> processQueue() async {
+
+    // for local alerts that can be sent immediately
+    final List<Map<String, dynamic>> pendingLocal = await AlertDao.getPendingLocalUploads();
+    for (final alertMap in pendingLocal) {
+        final alert = Alert.fromJson(alertMap);
+        
+        if (await hasInternet()) {
+          try {
+              await SupabaseService.uploadAlert(alert);
+              await AlertDao.markLocalUploaded(alert.id);
+              debugPrint('Uploaded local alert ${alert.id} to Supabase');
+          } catch (e) {
+              debugPrint('Failed to upload local alert ${alert.id}: $e');
+          }
+        } else {
+            debugPrint('No internet for local alert ${alert.id}, retry later');
+        }
+    }
+    
+
     // get all unforwarded received alerts from db
     final List<Map<String, dynamic>> unforwardedAlerts =
         await AlertDao.getUnforwardedReceivedAlerts();
 
     // loop through each alert explicitly typed
-    for (Map<String, dynamic> alert in unforwardedAlerts) {
+    for (final alert in unforwardedAlerts) {
       try {
         int ttl = alert['ttl'] ?? 0;
+        final String alertId = alert['alertId'];
 
-        // checker if expired for each alert in queue
         if (ttl <= 0) {
-          debugPrint('Skipping expired alert ${alert['alertId']}');
+          debugPrint('Skipping expired alert $alertId');
           continue;
         }
 
-        // skip if not a SAFE/DANGER alert (CHANGE if needed)
-        final String type = alert['type']?.toString() ?? '';
+        final type = alert['type']?.toString() ?? '';
         if (type != 'SAFE' && type != 'DANGER') {
-          debugPrint('Skipping unknown type alert ${alert['alertId']}');
-          await AlertDao.markAsForwarded(alert['alertId']); // mark to avoid looping
+          debugPrint('Skipping unknown type alert $alertId');
+          await AlertDao.markAsForwarded(alertId);
           continue;
         }
 
-        // decrease ttl
-        final Map<String, dynamic> forwardPayload = {
-        'id': alert['alertId'],
-        'type': alert['type'],            // SAFE / DANGER
-        'timestamp': alert['timestamp'],
-        'senderId': alert['fromDevice'],  // original sender
-        'ttl': ttl - 1,                      // decrement TTL for next hop
-      };
+        final forwardPayload = {
+          'id': alertId,
+          'type': type,
+          'timestamp': alert['timestamp'],
+          'senderId': alert['fromDevice'],
+          'ttl': ttl - 1,
+        };
 
-        debugPrint('Forwarding alert ${alert['alertId']} from ${alert['fromDevice']}');
+        // forward to nearby
+        debugPrint('Forwarding alert $alertId from ${alert['fromDevice']}');
         await NearbyService.sendToAll(forwardPayload);
-        await AlertDao.markAsForwarded(alert['alertId']);
+
+        // upload if net is available
+        try {
+          if (await hasInternet()) {
+            final alertObj = Alert.fromJson(forwardPayload);
+            await SupabaseService.uploadAlert(alertObj);
+            await AlertDao.markReceivedUploaded(alertId);
+            debugPrint('Uploaded alert $alertId to Supabase');
+          } else {
+            debugPrint('No internet for alert $alertId, will retry later');
+          }
+        } catch (e) {
+          debugPrint('Supabase upload failed for alert $alertId: $e');
+        }
+
+        // --- 3️⃣ Mark as forwarded locally ---
+        await AlertDao.markAsForwarded(alertId);
+
       } catch (e) {
-        debugPrint('Failed to forward alert ${alert['alertId']}: $e');
+        debugPrint('Failed to process alert ${alert['alertId']}: $e');
       }
     }
   }

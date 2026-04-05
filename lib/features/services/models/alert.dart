@@ -4,6 +4,7 @@ class Alert {
   final int timestamp;
   final String senderId;
   final int ttl;
+  final bool uploaded;
 
   Alert({
     required this.id,
@@ -11,6 +12,7 @@ class Alert {
     required this.timestamp,
     required this.senderId,
     required this.ttl,
+    this.uploaded = false,
   });
 
   Map<String, dynamic> toJson() => {
@@ -19,6 +21,7 @@ class Alert {
         'timestamp': timestamp,
         'senderId': senderId,
         'ttl': ttl,
+        'uploaded': uploaded ? 1 : 0,
       };
 
   factory Alert.fromJson(Map<String, dynamic> json) {
@@ -28,6 +31,26 @@ class Alert {
       timestamp: json['timestamp'],
       senderId: json['senderId'],
       ttl: json['ttl'] ?? 5,
+      uploaded: (json['uploaded'] ?? 0) == 1,
+    );
+  }
+
+  /// copyWith allows you to create a modified copy of an Alert
+  Alert copyWith({
+    String? id,
+    String? type,
+    int? timestamp,
+    String? senderId,
+    int? ttl,
+    bool? uploaded,
+  }) {
+    return Alert(
+      id: id ?? this.id,
+      type: type ?? this.type,
+      timestamp: timestamp ?? this.timestamp,
+      senderId: senderId ?? this.senderId,
+      ttl: ttl ?? this.ttl,
+      uploaded: uploaded ?? this.uploaded,
     );
   }
 }

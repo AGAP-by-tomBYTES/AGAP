@@ -5,7 +5,9 @@ import 'offline_db_service.dart';
 class AlertDao {
   static Future<void> insertAlert(Alert alert) async {
     final db = await DatabaseService.database;
-    await db.insert('alerts', alert.toJson(), conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.insert('alerts',
+    alert.toJson()..putIfAbsent('uploaded', () => 0),
+    conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   static Future<List<Alert>> getAlerts() async {
@@ -34,7 +36,29 @@ class AlertDao {
 
   static Future<void> markAsForwarded(String alertId) async {
     final db = await DatabaseService.database;
-    await db.update('received_alerts', {'isForwarded': 1}, where: 'alertId = ?', whereArgs: [alertId]);
+    await db.update('received_alerts', {'isForwarded': 1}, 
+    where: 'alertId = ?', 
+    whereArgs: [alertId]);
+  }
+
+  static Future<void> markLocalUploaded(String alertId) async {
+    final db = await DatabaseService.database;
+    await db.update(
+      'alerts',
+      {'uploaded': 1},
+      where: 'id = ?',
+      whereArgs: [alertId],
+    );
+  }
+
+  static Future<void> markReceivedUploaded(String alertId) async {
+    final db = await DatabaseService.database;
+    await db.update(
+      'received_alerts',
+      {'uploaded': 1},
+      where: 'alertId = ?',
+      whereArgs: [alertId],
+    );
   }
 
   static Future<List<Map<String, dynamic>>> getUnforwardedReceivedAlerts() async {
@@ -46,6 +70,25 @@ class AlertDao {
     );
     return result;
   }
+
+    static Future<List<Map<String, dynamic>>> getPendingLocalUploads() async {
+      final db = await DatabaseService.database;
+      return await db.query(
+        'alerts',
+        where: 'uploaded = ?',
+        whereArgs: [0],
+      );
+    }
+
+    static Future<List<Map<String, dynamic>>> getPendingReceivedUploads() async {
+      final db = await DatabaseService.database;
+      return await db.query(
+        'received_alerts',
+        where: 'uploaded = ?',
+        whereArgs: [0],
+      );
+    }
+  
 
 
   /* ======= FOR UNIT TEST ONLY ======= */
