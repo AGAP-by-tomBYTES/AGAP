@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:agap/features/auth/models/resident_data.dart';
+import 'package:agap/features/resident/models/resident_data.dart';
 import 'package:agap/features/auth/services/auth_service.dart';
 import 'resident_test_page.dart';
 import 'package:agap/features/auth/widgets/signup_step_header.dart';

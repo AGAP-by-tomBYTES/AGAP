@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:agap/core/services/supabase_service.dart';
-import 'package:agap/features/auth/models/resident_data.dart';
+import 'package:agap/features/resident/models/resident_data.dart';
 
 /*
 helper class for authentication
@@ -88,7 +88,7 @@ class AuthService {
     return await client
         .from('resident')
         .select()
-        .eq('auth_resident_id', residentId)
+        .eq('id', residentId)
         .single();
   }
 

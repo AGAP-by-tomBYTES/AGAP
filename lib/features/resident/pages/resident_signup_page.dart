@@ -1,14 +1,17 @@
+//dependencies
 import 'package:flutter/material.dart';
-import 'package:agap/features/auth/models/resident_data.dart';
-import 'package:agap/features/auth/widgets/auth_switch_prompt.dart';
-import 'package:agap/features/auth/widgets/signup_field.dart';
-import 'package:agap/features/auth/widgets/signup_step_header.dart';
-import 'package:agap/features/auth/widgets/birthdate_format.dart';
-import 'package:agap/theme/color.dart';
 import 'package:flutter/services.dart';
+
+import 'package:agap/theme/color.dart';
+import 'package:agap/features/auth/widgets/widgets.dart';
+
 import 'package:agap/core/routes/screen_routes.dart';
 import 'package:agap/core/services/navigation_service.dart';
+
 import 'package:agap/features/auth/user_role.dart';
+import 'package:agap/features/resident/models/resident_data.dart';
+
+
 
 class ResidentSignupPage extends StatefulWidget {
   final UserRole role;
@@ -61,7 +64,7 @@ class _ResidentSignupPageState extends State<ResidentSignupPage> {
         child: Column(
           children: [
             const SignupStepHeader(
-              stepLabel: 'STEP 1 OF 5',
+              stepLabel: '',
               sectionLabel: 'ACCOUNT',
               title: 'Create your account',
               description: 'Your details help us reach you faster in an emergency.',

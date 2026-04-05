@@ -7,10 +7,10 @@ import 'package:agap/features/auth/pages/logo_screen.dart';
 import 'package:agap/features/auth/pages/start_page.dart';
 import 'package:agap/features/auth/pages/login_page.dart';
 import 'package:agap/features/auth/pages/rolescreen.dart';
-import 'package:agap/features/auth/pages/resident_signup_page.dart';
-import 'package:agap/features/auth/pages/resident_signup_location.dart';
+import 'package:agap/features/resident/pages/resident_signup_page.dart';
+import 'package:agap/features/resident/pages/resident_signup_location.dart';
 
-import 'package:agap/features/auth/models/resident_data.dart';
+import 'package:agap/features/resident/models/resident_data.dart';
 
 import 'package:agap/features/resident/pages/home_page.dart';
 // import 'package:agap/features/responder/pages/home_page.dart';

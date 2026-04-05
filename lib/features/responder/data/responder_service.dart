@@ -3,7 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:agap/features/responder/data/responder_dashboard_data.dart';
 import 'package:agap/features/responder/data/responder_dashboard_preview_data.dart';
-import 'package:agap/features/services/weather.dart';
+import 'package:agap/core/services/weather.dart';
 
 class ResponderService {
   SupabaseClient get _client => Supabase.instance.client;
