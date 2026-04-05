@@ -29,8 +29,24 @@ class _LogoScreenState extends State<LogoScreen> {
   Widget build(BuildContext context) {
     debugPrint("LogoScreen: build() called");
     
-    return const Scaffold(
-      body: Center(child: SplashLogo()),
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SplashLogo(),
+            SizedBox(height: 20),
+            Text(
+                'Alert. Guide. Assist. Protect.',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Colors.white,
+                  fontSize: 14,
+                  letterSpacing: 0.2,
+                ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
