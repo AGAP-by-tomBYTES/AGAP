@@ -288,8 +288,8 @@ class _LoginPageState extends State<LoginPage> {
 
       } else {
         
-        final responder = await SupabaseService.client.from('responder')
-                                .select().eq('id', userId).maybeSingle();
+        final responder = await SupabaseService.client.from('responders')
+                                .select().eq('auth_user_id', userId).maybeSingle();
 
         if (responder == null) {
           debugPrint ("LoginPage: user is not a responder -> signing out");
