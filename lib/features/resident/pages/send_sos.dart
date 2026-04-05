@@ -1,7 +1,14 @@
 import 'dart:async';
+import 'package:agap/core/services/supabase_service.dart';
 import 'package:agap/features/resident/pages/safe_state.dart';
+import 'package:agap/features/services/database/alert_dao.dart';
+import 'package:agap/features/services/internet_service.dart';
+import 'package:agap/features/services/models/alert.dart';
+import 'package:agap/features/services/device_id.dart';
+import 'package:agap/features/services/nearby_service.dart';
 import 'package:flutter/material.dart';
 import 'package:agap/theme/color.dart';
+import 'package:uuid/uuid.dart';
 import 'danger_page.dart';
 
 class SosPage extends StatefulWidget {
@@ -25,6 +32,8 @@ class _SosPageState extends State<SosPage> {
         if (progress >= 1) {
           timer.cancel();
 
+           _handleSafe();
+
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -42,6 +51,47 @@ class _SosPageState extends State<SosPage> {
     setState(() {
       progress = 0.0;
     });
+  }
+
+  /* ASYNC HELPERS */
+  Future<void> _handleSafe() async {
+    final deviceId = await DeviceIdService.getDeviceId();
+
+    final alert = Alert(
+      id: Uuid().v4(),
+      type: "SAFE",
+      timestamp: DateTime.now().millisecondsSinceEpoch,
+      senderId: deviceId,
+      ttl: 5,
+    );
+
+    await AlertDao.insertAlert(alert);
+
+    if (!mounted) return;
+  }
+
+  Future<void> _handleDanger() async {
+    final deviceId = await DeviceIdService.getDeviceId();
+
+    final alert = Alert(
+      id: Uuid().v4(),
+      type: "DANGER",
+      timestamp: DateTime.now().millisecondsSinceEpoch,
+      senderId: deviceId,
+      ttl: 5,
+      uploaded: false,
+    );
+
+    // save
+    await AlertDao.insertAlert(alert);
+    await NearbyService.sendToAll(alert.toJson());
+    if (await hasInternet()) {
+      await SupabaseService.uploadAlert(alert);
+    } else {
+      debugPrint('No internet, will retry later via queue.');
+    }
+
+    if (!mounted) return;
   }
 
   @override
@@ -94,6 +144,9 @@ class _SosPageState extends State<SosPage> {
               /// HOLD BUTTON
               GestureDetector(
                 onTap: () {
+
+                  _handleDanger();
+
                   Navigator.push(
                     context,
                     MaterialPageRoute(

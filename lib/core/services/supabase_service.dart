@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:agap/features/services/models/alert.dart';
 
 
 /*
@@ -11,6 +12,8 @@ initialize supabase
 class SupabaseService {
 
   static bool isInitialized = false;
+
+  static Future<void> Function(Alert)? uploadOverride;
 
   static Future<void> initialize() async {
     //load env vars from .env file
@@ -49,6 +52,27 @@ class SupabaseService {
       throw Exception('Supabase not initialized.');
     }
     return Supabase.instance.client;
+  }
+
+  static Future<void> uploadAlert(Alert alert) async {
+    if (uploadOverride != null) {
+    await uploadOverride!(alert);
+    return;
+  }
+
+    if (!isInitialized) return;
+
+    try {
+      await client.from('alerts').insert({
+        'id': alert.id,
+        'type': alert.type,
+        'timestamp': alert.timestamp,
+        'senderId': alert.senderId,
+      });
+      debugPrint('Uploaded alert ${alert.id} to Supabase');
+    } catch (e) {
+      debugPrint('Supabase upload failed: $e');
+    }
   }
 
 }

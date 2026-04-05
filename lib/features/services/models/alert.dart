@@ -28,8 +28,8 @@ class Alert {
     return Alert(
       id: json['id'],
       type: json['type'],
-      timestamp: json['timestamp'],
-      senderId: json['senderId'],
+      timestamp: (json['timestamp'] ?? json['receivedAt'] ?? DateTime.now().millisecondsSinceEpoch) as int,
+      senderId: (json['senderId'] ?? json['fromDevice']) as String,
       ttl: json['ttl'] ?? 5,
       uploaded: (json['uploaded'] ?? 0) == 1,
     );

@@ -4,8 +4,8 @@ import 'package:nearby_connections/nearby_connections.dart';
 import 'package:agap/features/services/database/alert_dao.dart';
 import 'package:agap/features/services/models/alert.dart';
 import 'package:agap/features/services/device_id.dart';
-import 'package:agap/features/services/supabase_service.dart';
 import 'package:agap/features/services/internet_service.dart';
+import 'package:agap/core/services/supabase_service.dart';
 
 class NearbyService {
   static const Strategy strategy = Strategy.P2P_CLUSTER;
