@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:agap/theme/color.dart';
 
+import 'package:agap/features/auth/services/auth_service.dart';
+
 import 'package:agap/features/resident/services/resident_services.dart';
 import 'package:agap/features/resident/widgets/resident_header.dart';
 import 'package:agap/features/resident/widgets/bottom_navbar.dart';
@@ -545,10 +547,32 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildLogoutButton() {
+    final AuthService authService = AuthService();
+
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
-        onPressed: () {},
+             onPressed: () async {
+        final navigator = Navigator.of(context);
+        final messenger = ScaffoldMessenger.of(context);
+
+        try {
+          await authService.signOut();
+
+          if (!mounted) return;
+
+          navigator.pushNamedAndRemoveUntil(
+            '/role', 
+            (route) => false,
+          );
+        } catch (e) {
+          if (!mounted) return;
+
+          messenger.showSnackBar(
+            SnackBar(content: Text("Logout failed: $e")),
+          );
+        }
+      },
         icon: const Icon(Icons.logout, color: Colors.redAccent),
         label: const Text("Logout Account",
             style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
