@@ -621,7 +621,8 @@ class _IncidentReportPageState extends State<IncidentReportPage> {
                     physics: const NeverScrollableScrollPhysics(),
                     padding: const EdgeInsets.symmetric(vertical: 6),
                     itemCount: _searchResults.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1, indent: 16, endIndent: 16),
+                    separatorBuilder: (_, index) =>
+                        const Divider(height: 1, indent: 16, endIndent: 16),
                     itemBuilder: (context, index) {
                       final resident = _searchResults[index];
                       final fullName = _buildFullName(resident);
@@ -2064,7 +2065,6 @@ class _ReportTextField extends StatelessWidget {
     this.hint,
     this.validator,
     this.maxLines = 1,
-    this.prefixIcon,
   });
 
   final String label;
@@ -2072,7 +2072,6 @@ class _ReportTextField extends StatelessWidget {
   final String? hint;
   final String? Function(String?)? validator;
   final int maxLines;
-  final Widget? prefixIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -2099,7 +2098,6 @@ class _ReportTextField extends StatelessWidget {
           ),
           decoration: InputDecoration(
             hintText: hint,
-            prefixIcon: prefixIcon,
             hintStyle: const TextStyle(
               color: AppColors.inputHint,
               fontWeight: FontWeight.w600,

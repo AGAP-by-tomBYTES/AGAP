@@ -1,6 +1,7 @@
 // test/sos_queue_test.dart
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/foundation.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:agap/features/services/database/alert_dao.dart';
 import 'package:agap/features/services/models/alert.dart';
@@ -24,10 +25,10 @@ void main() {
     await AlertDao.insertAlert(alert);
 
     final alerts = await AlertDao.getAlerts();
-    print('Alerts in DB: ${alerts.map((a) => a.id).toList()}');
+    debugPrint('Alerts in DB: ${alerts.map((a) => a.id).toList()}');
 
     // simulate queue
     final unforwarded = await AlertDao.getUnforwardedReceivedAlerts();
-    print('Unforwarded alerts: $unforwarded');
+    debugPrint('Unforwarded alerts: $unforwarded');
   });
 }

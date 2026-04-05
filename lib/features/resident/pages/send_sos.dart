@@ -150,35 +150,9 @@ class _SosPageState extends State<SosPage> {
               child: Column(
                 children: [
                   const SizedBox(height: 60),
-
-              /// HOLD BUTTON
-              GestureDetector(
-                onTap: _handleDanger,
-                onTapDown: (_) => _startHolding(),
-                onTapUp: (_) => _stopHolding(),
-                onTapCancel: _stopHolding,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    /// PROGRESS RING
-                    SizedBox(
-                      width: 200,
-                      height: 200,
-                      child: CircularProgressIndicator(
-                        value: progress,
-                        strokeWidth: 8,
-                        backgroundColor: Colors.grey.shade300,
-                        valueColor: const AlwaysStoppedAnimation<Color>(
-                          Colors.green,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 170), 
-
+                  // Hold to mark safe, tap to trigger danger.
                   GestureDetector(
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DangerPage())),
+                    onTap: _handleDanger,
                     onTapDown: (_) => _startHolding(),
                     onTapUp: (_) => _stopHolding(),
                     onTapCancel: _stopHolding,

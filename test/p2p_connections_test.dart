@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/foundation.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:agap/features/services/database/alert_dao.dart';
 import 'package:agap/features/services/database/sos_queue.dart';
@@ -22,7 +23,9 @@ void main() {
         final ttl = alert['ttl'];
         final id = alert['id'];
         final from = alert['senderId'];
-        print('Simulated send of $id with TTL $ttl from $from to all connected endpoints');
+        debugPrint(
+          'Simulated send of $id with TTL $ttl from $from to all connected endpoints',
+        );
       };
 
       // Step 0: Insert alert into received queue at DEVICE_A
@@ -42,7 +45,7 @@ void main() {
       );
 
       // --- HOP 1 ---
-      print('--- HOP 1 ---');
+      debugPrint('--- HOP 1 ---');
       await SosQueueService.processQueue();
 
       // Insert as if received by DEVICE_1 for next hop
@@ -54,7 +57,7 @@ void main() {
       );
 
       // --- HOP 2 ---
-      print('--- HOP 2 ---');
+      debugPrint('--- HOP 2 ---');
       await SosQueueService.processQueue();
 
       // Insert as if received by DEVICE_2 for final hop
@@ -66,14 +69,14 @@ void main() {
       );
 
       // --- HOP 3 ---
-      print('--- HOP 3 ---');
+      debugPrint('--- HOP 3 ---');
       await SosQueueService.processQueue();
 
       // Verify all alerts are marked forwarded
       final remaining = await AlertDao.getUnforwardedReceivedAlerts();
       expect(remaining.length, 0);
 
-      print('✅ Multihop test with distinct devices completed successfully.');
+      debugPrint('Multihop test with distinct devices completed successfully.');
     });
   });
 }

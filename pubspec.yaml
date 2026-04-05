@@ -49,6 +49,7 @@ dependencies:
   sqflite_common_ffi: ^2.4.0+2
   nearby_connections: ^4.3.0
   connectivity_plus: ^7.1.0
+  http: ^1.4.0
 
 dev_dependencies:
   flutter_test:
