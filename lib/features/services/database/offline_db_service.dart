@@ -28,7 +28,7 @@ class DatabaseService {
         id TEXT PRIMARY KEY,
         type TEXT NOT NULL,
         timestamp INTEGER NOT NULL,
-        senderId TEXT NOT NULL
+        senderId TEXT NOT NULL,
         ttl INTEGER DEFAULT 5,
         uploaded INTEGER DEFAULT 0
       )

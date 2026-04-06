@@ -1,6 +1,17 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 
+class InternetService {
+  static Future<bool> Function()? override;
+
+  static Future<bool> check() async {
+    if (override != null) return override!();
+
+    final results = await Connectivity().checkConnectivity();
+    return !results.contains(ConnectivityResult.none);
+  }
+}
+
+
 Future<bool> hasInternet() async {
-  final result = await Connectivity().checkConnectivity();
-  return result.any((status) => status != ConnectivityResult.none);
+  return await InternetService.check();
 }
