@@ -25,8 +25,6 @@ class _FamilyPageState extends State<FamilyPage> {
   List<Map<String, dynamic>> familyMembers = [];
   bool isLoading = true;
 
-  String? nextOfKinId;
-
   @override
   void initState() {
     super.initState();
@@ -99,7 +97,7 @@ class _FamilyPageState extends State<FamilyPage> {
     final allergCtrl = TextEditingController(text: member?['allergies'] ?? '');
     final medCtrl = TextEditingController(text: member?['medications'] ?? '');
 
-    bool isNextOfKin = false;
+    bool isNextOfKin = member?['is_next_of_kin'] ?? false;
 
     showModalBottomSheet(
       context: context,
@@ -158,7 +156,7 @@ class _FamilyPageState extends State<FamilyPage> {
                         Switch(
                           value: isNextOfKin,
                           activeThumbColor: AppColors.agapCoral,
-                          onChanged: isNextOfKin ? null : (val) {
+                          onChanged: (val) {
                             setSheetState(() => isNextOfKin = val);
                           },
                         ),
@@ -228,15 +226,6 @@ class _FamilyPageState extends State<FamilyPage> {
                             }
                             await _loadFamily();
                             if (!mounted) return;
-
-                            setState(() {
-                              if (isNextOfKin) {
-                                  nextOfKinId = "${fNameCtrl.text} ${lNameCtrl.text}";
-                            } else if (nextOfKinId ==
-                                 "${fNameCtrl.text} ${lNameCtrl.text}") {
-                                  nextOfKinId = null;
-                            }
-                          });
 
                     if (!mounted) return;
 
@@ -334,7 +323,7 @@ class _FamilyPageState extends State<FamilyPage> {
   }
 
   Widget _buildMemberTile(Map<String, dynamic> member) {
-    bool isKin = nextOfKinId == "${member['firstName']} ${member['lastName']}";
+    bool isKin = member['is_next_of_kin'] == true;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
