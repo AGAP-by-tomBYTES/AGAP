@@ -81,8 +81,8 @@ void main() async {
     debugPrint("Nearby connections initialized");
   }
 
-  // SosQueueService.startQueueProcessor();
-  // debugPrint("Nearby connections initialized");
+  SosQueueService.startQueueProcessor();
+  debugPrint("Nearby connections initialized");
 
 
   debugPrint("Launching Agap app");

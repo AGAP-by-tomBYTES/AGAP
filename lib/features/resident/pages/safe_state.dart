@@ -37,7 +37,7 @@ class _SafePageState extends State<SafePage> {
               bottom: false,
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: 30),
                 child: Center(
                   child: Text(
                     "STATUS REPORTED    $formattedTime", // Dynamic time here

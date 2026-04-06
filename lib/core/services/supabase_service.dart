@@ -1,4 +1,3 @@
-
 //dependencies
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -54,26 +53,28 @@ class SupabaseService {
     return Supabase.instance.client;
   }
 
-  static Future<void> uploadAlert(Alert alert) async {
-    if (uploadOverride != null) {
-    await uploadOverride!(alert);
-    return;
-  }
+    static Future<void> uploadAlert(Alert alert) async {
+    final client = SupabaseService.client;
 
-    if (!isInitialized) return;
+    final user = client.auth.currentUser;
 
-    try {
-      await client.from('alerts').upsert({
-        'id': alert.id,
-        'type': alert.type,
-        'timestamp': alert.timestamp,
-        'senderId': alert.senderId,
-      });
-      debugPrint('Uploaded alert ${alert.id} to Supabase');
-    } catch (e) {
-      debugPrint('Supabase upload failed: $e');
+    if (user == null) {
+      throw Exception("User not authenticated");
     }
+
+    await client.from('alerts').insert({
+      'id': alert.id, 
+      'type': alert.type,
+      'timestamp': alert.timestamp,
+      'senderId': alert.senderId,
+      'ttl': alert.ttl,
+
+      'resident_id': user.id,
+      'status': 'pending',
+      'created_at': DateTime.now().toIso8601String(),
+
+      'latitude': null,
+      'longitude': null,
+    });
   }
-
 }
-

@@ -37,7 +37,7 @@ class _DangerPageState extends State<DangerPage> {
               bottom: false,
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: 30),
                 child: Center(
                   child: Text(
                     "RESPONDERS ALERTED    $formattedTime",
