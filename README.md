@@ -193,5 +193,5 @@ The result is a solution grounded in reality, not assumption.
 | **Myra Verde** | Backend Developer — Resident Interface |
 | **Eleah Melchor** | Frontend Developer — Responder Interface |
 | **Chrystie Sajorne** | Frontend Developer — Resident Interface |
-
+| **Nikko Gabriel Hismana** | Adviser |
 *Built with love for communities that deserve better emergency systems.*
