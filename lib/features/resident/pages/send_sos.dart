@@ -1,16 +1,8 @@
-import 'dart:async';
-import 'package:agap/core/services/supabase_service.dart';
-import 'package:agap/features/resident/pages/safe_state.dart';
-import 'package:agap/features/services/database/alert_dao.dart';
-import 'package:agap/features/services/internet_service.dart';
-import 'package:agap/features/services/models/alert.dart';
-import 'package:agap/features/services/device_id.dart';
-import 'package:agap/features/services/nearby_service.dart';
 import 'package:flutter/material.dart';
+import 'package:agap/features/services/models/alert_type.dart';
 import 'package:agap/theme/color.dart';
-import 'package:uuid/uuid.dart';
-import 'danger_page.dart';
 import 'package:agap/features/resident/widgets/bottom_navbar.dart';
+import 'package:agap/features/resident/pages/sos_confirmation_page.dart';
 
 
 class SosPage extends StatefulWidget {
@@ -23,85 +15,77 @@ class SosPage extends StatefulWidget {
 }
 
 class _SosPageState extends State<SosPage> {
-  double progress = 0.0;
-  Timer? _timer;
-
-  void _startHolding() {
-    progress = 0.0;
-
-    _timer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
-      setState(() {
-        progress += 0.02;
-
-        if (progress >= 1) {
-          timer.cancel();
-
-           _handleSafe();
-
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const SafePage(),
+  final int _selectedIndex = 2;
+  Widget _buildEmergencyPanel(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF4EF),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: AppColors.agapCoral.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "What's your emergency?",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+              color: AppColors.agapCoral,
             ),
-          );
-        }
-      });
-    });
-  }
-
-  void _stopHolding() {
-    _timer?.cancel();
-
-    setState(() {
-      progress = 0.0;
-    });
-  }
-
-  /* ASYNC HELPERS */
-  Future<void> _handleSafe() async {
-    final deviceId = await DeviceIdService.getDeviceId();
-
-    final alert = Alert(
-      id: Uuid().v4(),
-      type: "SAFE",
-      timestamp: DateTime.now().millisecondsSinceEpoch,
-      senderId: deviceId,
-      ttl: 5,
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'Pick the emergency category that best matches your situation.',
+            style: TextStyle(
+              color: Colors.black54,
+              height: 1.3,
+            ),
+          ),
+          const SizedBox(height: 18),
+          for (final option in AlertTypes.emergencyOptions)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: AppColors.agapCoral,
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    side: BorderSide(
+                      color: AppColors.agapCoral.withValues(alpha: 0.25),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(22),
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => SosConfirmationPage(
+                          alertType: option.code,
+                          resident: widget.resident,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Text(option.label),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
-
-    await AlertDao.insertAlert(alert);
-
-    if (!mounted) return;
-  }
-
-  Future<void> _handleDanger() async {
-    final deviceId = await DeviceIdService.getDeviceId();
-
-    final alert = Alert(
-      id: Uuid().v4(),
-      type: "DANGER",
-      timestamp: DateTime.now().millisecondsSinceEpoch,
-      senderId: deviceId,
-      ttl: 5,
-      uploaded: false,
-    );
-
-    // save
-    await AlertDao.insertAlert(alert);
-    await NearbyService.sendToAll(alert.toJson());
-    if (await hasInternet()) {
-      await SupabaseService.uploadAlert(alert);
-    } else {
-      debugPrint('No internet, will retry later via queue.');
-    }
-
-    if (!mounted) return;
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
   }
 
   @override
@@ -114,124 +98,57 @@ class _SosPageState extends State<SosPage> {
       ),
       body: Column(
         children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(12, 30, 12, 12), 
+          ColoredBox(
             color: Colors.black,
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "EMERGENCY ALERT ACTIVE",
-                  style: TextStyle(
-                    color: AppColors.agapOrange,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 30),
-
-              /// BIGGER QUESTION
-              const Text(
-                'Are you safe?',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 56, 
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-
-              const SizedBox(height: 60),
-
-              /// HOLD BUTTON
-              GestureDetector(
-                onTap: () {
-
-                  _handleDanger();
-
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const DangerPage(),
-                    ),
-                  );
-                },
-                onTapDown: (_) => _startHolding(),
-                onTapUp: (_) => _stopHolding(),
-                onTapCancel: _stopHolding,
-                child: Stack(
-                  alignment: Alignment.center,
+            child: SafeArea(
+              bottom: false,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    /// PROGRESS RING
-                    SizedBox(
-                      width: 200,
-                      height: 200,
-                      child: CircularProgressIndicator(
-                        value: progress,
-                        strokeWidth: 8,
-                        backgroundColor: Colors.grey.shade300,
-                        valueColor: const AlwaysStoppedAnimation<Color>(
-                          Colors.green,
-                        ),
+                    Text(
+                      "EMERGENCY ALERT ACTIVE",
+                      style: TextStyle(
+                        color: AppColors.agapOrange,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-
-                    /// INNER BUTTON
-                    Container(
-                      width: 160,
-                      height: 160,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white,
-                        border: Border.all(color: Colors.grey.shade300),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 12,
-                            offset: Offset(0, 6),
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: progress > 0
-                            ? const Text(
-                                "Keep holding... \n Marking you safe",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Colors.green,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              )
-                            : RichText(
-                                textAlign: TextAlign.center,
-                                text: TextSpan(
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  children: [
-                                    const TextSpan(text: "Hold for "),
-                                    TextSpan(
-                                      text: "SAFE",
-                                      style: const TextStyle(fontWeight: FontWeight.bold),
-                                    ),
-                                    const TextSpan(
-                                      text: "\nTap for ",
-                                      style: TextStyle(color: AppColors.agapCoral)),
-                                    TextSpan(
-                                      text: "DANGER",
-                                      style: const TextStyle(color: AppColors.agapCoral),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                    Text(
+                      "Since 8:15 AM",
+                      style: TextStyle(
+                        color: AppColors.agapOrange,
+                        fontSize: 12,
                       ),
                     ),
                   ],
                 ),
+              ),
+            ),
+          ),
+
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                children: [
+                  const SizedBox(height: 60),
+                  const Text(
+                    'Are you\nsafe?',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 64,
+                      height: 1.1,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.black,
+                    ),
+
+                  const SizedBox(height: 44),
+                  _buildEmergencyPanel(context),
+                  const SizedBox(height: 40),
+                ],
               ),
             ],
           ),
