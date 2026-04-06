@@ -6,6 +6,7 @@ import 'package:agap/features/services/models/alert_type.dart';
 import 'package:agap/features/services/sos_alert_service.dart';
 import 'package:agap/theme/color.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import 'danger_page.dart';
 
@@ -29,6 +30,17 @@ class _SosConfirmationPageState extends State<SosConfirmationPage> {
   final int _selectedIndex = 2;
   bool _busy = false;
   bool _ignoreNextTap = false;
+
+  late final DateTime now;
+  late final String formattedTime;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize time once when the page loads
+    now = DateTime.now();
+    formattedTime = DateFormat('hh:mm a').format(now);
+  }
 
   void _startHolding() {
     if (_busy) return;
@@ -140,10 +152,10 @@ class _SosConfirmationPageState extends State<SosConfirmationPage> {
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
+                    const Text(
                       "EMERGENCY ALERT ACTIVE",
                       style: TextStyle(
                         color: AppColors.agapOrange,
@@ -152,8 +164,8 @@ class _SosConfirmationPageState extends State<SosConfirmationPage> {
                       ),
                     ),
                     Text(
-                      "Since 8:15 AM",
-                      style: TextStyle(
+                      "Since $formattedTime",
+                      style: const TextStyle(
                         color: AppColors.agapOrange,
                         fontSize: 12,
                       ),

@@ -2,11 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:agap/features/resident/pages/resident_dashboard.dart';
 import 'package:agap/features/services/sos_alert_service.dart';
 import 'safe_state.dart';
+import 'package:intl/intl.dart';
 
-class DangerPage extends StatelessWidget {
+class DangerPage extends StatefulWidget {
   const DangerPage({
     super.key,
   });
+
+  @override
+  State<DangerPage> createState() => _DangerPageState();
+}
+
+class _DangerPageState extends State<DangerPage> {
+  late final String formattedTime;
+
+  @override
+  void initState() {
+    super.initState();
+    formattedTime = DateFormat('hh:mm a').format(DateTime.now());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,10 +38,10 @@ class DangerPage extends StatelessWidget {
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 12),
-                child: const Center(
+                child: Center(
                   child: Text(
-                    "RESPONDERS ALERTED    8:15 AM",
-                    style: TextStyle(
+                    "RESPONDERS ALERTED    $formattedTime",
+                    style: const TextStyle(
                       color: Colors.orange,
                       fontWeight: FontWeight.bold,
                     ),
@@ -70,7 +84,7 @@ class DangerPage extends StatelessWidget {
                   const SizedBox(height: 30),
 
                   Text(
-                    "Help is otw,\nEleah.",
+                    "The responders have been notified.",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 28,
@@ -89,9 +103,9 @@ class DangerPage extends StatelessWidget {
 
                   const SizedBox(height: 6),
 
-                  const Text(
-                    "8:54 AM · Miagao, Iloilo",
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  Text(
+                    "$formattedTime · Miagao, Iloilo",
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                   const SizedBox(height: 36),
 
@@ -132,7 +146,8 @@ class DangerPage extends StatelessWidget {
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
                         foregroundColor: dangerColor,
-                        side: BorderSide(color: dangerColor.withValues(alpha: 0.35)),
+                        side: BorderSide(
+                            color: dangerColor.withValues(alpha: 0.35)),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
