@@ -1,16 +1,42 @@
+import 'package:agap/core/services/supabase_service.dart';
 import 'package:flutter/material.dart';
 
 import 'package:agap/features/responder/data/responder_dashboard_data.dart';
 import 'package:agap/features/responder/widgets/dashboard_section_card.dart';
 import 'package:agap/theme/color.dart';
 
-class ResponderAlertsPage extends StatelessWidget {
+class ResponderAlertsPage extends StatefulWidget {
   const ResponderAlertsPage({
     super.key,
     required this.data,
   });
 
   final ResponderDashboardData data;
+
+  @override
+  State<ResponderAlertsPage> createState() => _ResponderAlertsPageState();
+}
+
+class _ResponderAlertsPageState extends State<ResponderAlertsPage> {
+  List<dynamic> _alerts = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAlerts();
+  }
+
+  Future<void> _loadAlerts() async {
+    final client = SupabaseService.client;
+    final alerts = await client
+        .from('alerts')
+        .select()
+        .order('created_at', ascending: false);
+    setState(() {
+      _alerts = alerts;
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +92,7 @@ class ResponderAlertsPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      data.teamStation.station,
+                      widget.data.teamStation.station,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 22,
@@ -122,6 +148,7 @@ class _AlertSection extends StatelessWidget {
   final String title;
   final String emptyTitle;
   final String emptyMessage;
+  
 
   @override
   Widget build(BuildContext context) {
