@@ -45,6 +45,8 @@ class _FamilyPageState extends State<FamilyPage> {
   }
 
   void _showDeleteMemberDialog() {
+    final dialogNavigator = Navigator.of(context);
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -71,7 +73,7 @@ class _FamilyPageState extends State<FamilyPage> {
 
                   if (!mounted) return;
 
-                  Navigator.pop(context);
+                  dialogNavigator.pop();
                 },
               );
             },
@@ -83,6 +85,7 @@ class _FamilyPageState extends State<FamilyPage> {
 
   void _openMemberSheet({Map<String, dynamic>? member}) {
     final bool isEditing = member != null;
+    final sheetNavigator = Navigator.of(context);
     // final int? indexToUpdate = isEditing ? familyMembers.indexOf(member) : null;
     // final String oldMemberId = isEditing ? "${member['firstName']} ${member['lastName']}" : "";
 
@@ -237,7 +240,7 @@ class _FamilyPageState extends State<FamilyPage> {
 
                     if (!mounted) return;
 
-                      Navigator.pop(context);
+                      sheetNavigator.pop();
                     },
                     child: Text(
                       isEditing ? "Update Member Information"  : "Save Member Information", style: const TextStyle(

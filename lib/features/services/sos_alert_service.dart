@@ -1,10 +1,10 @@
 import 'package:agap/features/services/database/alert_dao.dart';
+import 'package:agap/core/services/supabase_service.dart';
 import 'package:agap/features/services/device_id.dart';
 import 'package:agap/features/services/internet_service.dart';
 import 'package:agap/features/services/models/alert.dart';
 import 'package:agap/features/services/models/alert_type.dart';
 import 'package:agap/features/services/nearby_service.dart';
-import 'package:agap/features/services/supabase_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
