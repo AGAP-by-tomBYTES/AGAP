@@ -38,8 +38,17 @@ class _FamilyPageState extends State<FamilyPage> {
 
     if (!mounted) return;
 
+    String? foundNoK;
+    try {
+      final nokMember = data.firstWhere((m) => m['is_next_of_kin'] == true);
+      foundNoK = "${nokMember['first_name']} ${nokMember['last_name']}";
+    } catch (_) {
+      foundNoK = null; // No NoK found
+    }
+
     setState(() {
       familyMembers = data;
+      nextOfKinId = foundNoK;
       isLoading = false;
     });
   }
@@ -59,7 +68,6 @@ class _FamilyPageState extends State<FamilyPage> {
             itemBuilder: (context, index) {
               final member = familyMembers[index];
               final fullName = "${member['first_name']} ${member['last_name']}";
-              debugPrint(member.toString());
               return ListTile(
                 leading: const Icon(Icons.person_remove, color: Colors.red),
                 title: Text(fullName),
@@ -86,8 +94,6 @@ class _FamilyPageState extends State<FamilyPage> {
   void _openMemberSheet({Map<String, dynamic>? member}) {
     final bool isEditing = member != null;
     final sheetNavigator = Navigator.of(context);
-    // final int? indexToUpdate = isEditing ? familyMembers.indexOf(member) : null;
-    // final String oldMemberId = isEditing ? "${member['firstName']} ${member['lastName']}" : "";
 
     final fNameCtrl = TextEditingController(text: member?['first_name'] ?? '');
     final lNameCtrl = TextEditingController(text: member?['last_name'] ?? '');
@@ -98,8 +104,7 @@ class _FamilyPageState extends State<FamilyPage> {
     final histCtrl = TextEditingController(text: member?['history'] ?? '');
     final allergCtrl = TextEditingController(text: member?['allergies'] ?? '');
     final medCtrl = TextEditingController(text: member?['medications'] ?? '');
-
-    bool isNextOfKin = false;
+    bool isNextOfKin = member?['is_next_of_kin'] ?? false;
 
     showModalBottomSheet(
       context: context,
@@ -150,6 +155,7 @@ class _FamilyPageState extends State<FamilyPage> {
                     decoration: BoxDecoration(
                       color: isNextOfKin ? AppColors.agapCoral.withValues(alpha: 0.1) : Colors.grey.shade50,
                       borderRadius: BorderRadius.circular(12),
+                      border: isNextOfKin ? Border.all(color: AppColors.agapCoral, width: 1) : null,
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -158,7 +164,7 @@ class _FamilyPageState extends State<FamilyPage> {
                         Switch(
                           value: isNextOfKin,
                           activeThumbColor: AppColors.agapCoral,
-                          onChanged: isNextOfKin ? null : (val) {
+                          onChanged: (val) {
                             setSheetState(() => isNextOfKin = val);
                           },
                         ),
@@ -227,18 +233,16 @@ class _FamilyPageState extends State<FamilyPage> {
                               );
                             }
                             await _loadFamily();
+                            
                             if (!mounted) return;
 
                             setState(() {
                               if (isNextOfKin) {
                                   nextOfKinId = "${fNameCtrl.text} ${lNameCtrl.text}";
-                            } else if (nextOfKinId ==
-                                 "${fNameCtrl.text} ${lNameCtrl.text}") {
+                            } else if (nextOfKinId == "${fNameCtrl.text} ${lNameCtrl.text}") {
                                   nextOfKinId = null;
                             }
                           });
-
-                    if (!mounted) return;
 
                       sheetNavigator.pop();
                     },
@@ -251,11 +255,11 @@ class _FamilyPageState extends State<FamilyPage> {
                   ),
                   ),
                 ],
+              ),
             ),
           ),
         ),
-        ),
-      )
+      ),
     );
   }
 
@@ -321,8 +325,11 @@ class _FamilyPageState extends State<FamilyPage> {
                   ),
 
                   const SizedBox(height: 20),
-                  for (var member in familyMembers) 
-                      _buildMemberTile(member),
+                  if (isLoading)
+                    const Center(child: CircularProgressIndicator())
+                  else
+                    for (var member in familyMembers) 
+                        _buildMemberTile(member),
                   const SizedBox(height: 100), 
                 ],
               ),
@@ -334,7 +341,7 @@ class _FamilyPageState extends State<FamilyPage> {
   }
 
   Widget _buildMemberTile(Map<String, dynamic> member) {
-    bool isKin = nextOfKinId == "${member['firstName']} ${member['lastName']}";
+    bool isKin = nextOfKinId == "${member['first_name']} ${member['last_name']}";
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -342,7 +349,11 @@ class _FamilyPageState extends State<FamilyPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: isKin ? AppColors.agapCoral : Colors.grey.shade200, width: isKin ? 1.5 : 1),
+        // Orange border for chosen Next of Kin
+        border: Border.all(
+          color: isKin ? AppColors.agapCoral : Colors.grey.shade200, 
+          width: isKin ? 2.0 : 1
+        ),
         boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10)],
       ),
       child: Column(
@@ -367,13 +378,19 @@ class _FamilyPageState extends State<FamilyPage> {
                           const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(color: AppColors.agapCoral, borderRadius: BorderRadius.circular(6)),
-                            child: const Text("NEXT OF KIN", style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)),
+                            decoration: BoxDecoration(
+                              color: AppColors.agapCoral, 
+                              borderRadius: BorderRadius.circular(6)
+                            ),
+                            child: const Text(
+                              "NEXT OF KIN", 
+                              style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)
+                            ),
                           )
                         ]
                       ],
                     ),
-                    Text(member['relationship']!, style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                    Text(member['relationship'] ?? "Family Member", style: const TextStyle(color: Colors.grey, fontSize: 13)),
                   ],
                 ),
               ),
@@ -406,14 +423,14 @@ class _FamilyPageState extends State<FamilyPage> {
     );
   }
 
-  Widget _buildInfoSnippet(String label, String value) {
+  Widget _buildInfoSnippet(String label, dynamic value) {
     return SizedBox(
       width: 120,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold)),
-          Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+          Text(value?.toString() ?? "N/A", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
         ],
       ),
     );
