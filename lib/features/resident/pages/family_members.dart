@@ -195,7 +195,21 @@ class _FamilyPageState extends State<FamilyPage> {
                     ),
                     onPressed: () async {
                       if (!_formKey.currentState!.validate()) return;
-                      if (!isEditing) {
+                      if (isEditing) {
+                        await _familyService.updateFamilyMember(
+                          id: member['id'],
+                          firstName: fNameCtrl.text,
+                          lastName: lNameCtrl.text,
+                          relationship: relCtrl.text,
+                          phone: phoneCtrl.text,
+                          birthdate: bDateCtrl.text,
+                          conditions: condCtrl.text,
+                          history: histCtrl.text,
+                          allergies: allergCtrl.text,
+                          medications: medCtrl.text,
+                          isNextOfKin: isNextOfKin,
+                        );
+                      } else {
                               await _familyService.addFamilyMember(
                                 firstName: fNameCtrl.text,
                                 lastName: lNameCtrl.text,

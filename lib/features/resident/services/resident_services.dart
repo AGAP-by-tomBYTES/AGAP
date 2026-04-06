@@ -99,6 +99,7 @@ Future<void> updateMedicalProfile({
 }
 
 
+
   // Future<void> updateProfile(Map<String, dynamic> data) async {
   //   final user = client.auth.currentUser;
 
