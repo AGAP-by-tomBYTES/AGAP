@@ -144,16 +144,15 @@ class _SosPageState extends State<SosPage> {
                       fontWeight: FontWeight.w900,
                       color: Colors.black,
                     ),
-                  ),
 
                   const SizedBox(height: 44),
                   _buildEmergencyPanel(context),
                   const SizedBox(height: 40),
                 ],
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

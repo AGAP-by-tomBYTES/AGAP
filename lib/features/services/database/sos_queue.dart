@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:agap/features/services/models/alert.dart';
 import 'package:agap/features/services/nearby_service.dart';
 import 'package:agap/features/services/internet_service.dart';
-import 'package:agap/features/services/supabase_service.dart';
+import 'package:agap/core/services/supabase_service.dart';
 
 class SosQueueService {
   static Timer? _timer;
@@ -53,6 +53,7 @@ class SosQueueService {
 
         if (ttl <= 0) {
           debugPrint('Skipping expired alert $alertId');
+          await AlertDao.markAsForwarded(alertId);
           continue;
         }
 
@@ -66,9 +67,10 @@ class SosQueueService {
         final forwardPayload = {
           'id': alertId,
           'type': type,
-          'timestamp': alert['timestamp'],
+          'timestamp': alert['receivedAt'],
           'senderId': alert['fromDevice'],
           'ttl': ttl - 1,
+          'uploaded': 0,  
         };
 
         // forward to nearby
@@ -89,7 +91,7 @@ class SosQueueService {
           debugPrint('Supabase upload failed for alert $alertId: $e');
         }
 
-        // --- 3️⃣ Mark as forwarded locally ---
+        // mark forward local
         await AlertDao.markAsForwarded(alertId);
 
       } catch (e) {
