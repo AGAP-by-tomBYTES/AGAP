@@ -45,6 +45,36 @@ class FamilyService {
     });
   }
 
+    Future<void> updateFamilyMember({
+    required String id,
+    required String firstName,
+    required String lastName,
+    required String relationship,
+    String? phone,
+    String? birthdate,
+    String? conditions,
+    String? history,
+    String? allergies,
+    String? medications,
+    bool isNextOfKin = false,
+  }) async {
+    final data = {
+      'first_name': firstName,
+      'last_name': lastName,
+      'relationship': relationship,
+      'phone': phone,
+      'birthdate': birthdate,
+      'conditions': conditions,
+      'history': history,
+      'allergies': allergies,
+      'medications': medications,
+      'is_next_of_kin': isNextOfKin,
+    };
+
+    await client.from('family_member').update(data).eq('id', id);
+  }
+
+
   //delete member
   Future<void> deleteFamilyMember(String id, bool isRegistered) async {
     if (isRegistered) {
