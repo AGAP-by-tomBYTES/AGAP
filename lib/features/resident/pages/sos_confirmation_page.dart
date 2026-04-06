@@ -151,7 +151,7 @@ class _SosConfirmationPageState extends State<SosConfirmationPage> {
               bottom: false,
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+                padding: const EdgeInsets.fromLTRB(12, 30, 12, 12),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [

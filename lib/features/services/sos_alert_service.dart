@@ -51,8 +51,9 @@ class SosAlertService {
         await SupabaseService.uploadAlert(alert);
         await AlertDao.markLocalUploaded(alert.id);
       }
-    } catch (e) {
-      debugPrint('Failed to upload alert online: $e');
+    } catch (e, stack) {
+      debugPrint('UPLOAD FAILED: $e');
+      debugPrint(stack.toString());
     }
 
     return alert;
