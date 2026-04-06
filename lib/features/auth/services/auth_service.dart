@@ -95,10 +95,17 @@ class AuthService {
         .select()
         .eq('id', residentId!.id)
         .maybeSingle();
+      
+      if (data == null) return null;
+      
+      final merged = {
+        ...data,
+      "email": residentId.email,
+      };
 
       debugPrint("Resident data: $data");
 
-      return data;
+      return merged;
     } catch (e) {
       debugPrint("Error getting resident profile: $e");
       return null;

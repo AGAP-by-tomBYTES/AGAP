@@ -130,7 +130,19 @@ class _ProfilePageState extends State<ProfilePage> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  _buildEditField("Email Address", emailCtrl),
+                  TextField(
+                    controller: emailCtrl,
+                    readOnly: true, 
+                    style: const TextStyle(color: Colors.grey),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.grey.shade200,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   _buildEditField("Phone Number", phoneCtrl),
                 ],
