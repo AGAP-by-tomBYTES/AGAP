@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:hive/hive.dart';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:agap/core/services/supabase_service.dart';
 import 'package:agap/features/resident/models/resident_data.dart';
@@ -10,6 +13,7 @@ helper class for authentication
 class AuthService {
 
   final client = SupabaseService.client;
+  bool _isFetchingResident = false;
 
   //get current user
   User? get currentUser {
@@ -49,6 +53,47 @@ class AuthService {
 
       debugPrint("AuthService: Login success → ${response.user!.id}");
 
+      final session = client.auth.currentSession;
+      final box = Hive.box("app_cache");
+
+      if (session != null) {
+        final sessionString = jsonEncode(session.toJson());
+        box.put("supabase_session", sessionString);
+        debugPrint("Session cached");
+      }
+
+
+      box.put("user_id", response.user!.id);
+      box.put("user_email", response.user!.email);
+
+      final userId = response.user!.id;
+
+      final resident = await client
+        .from('resident')
+        .select()
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (resident != null) {
+        box.put("user_role", "resident");
+        debugPrint("Role detected: resident");
+      } else {
+        final responder = await client
+            .from('responders')
+            .select()
+            .eq('auth_user_id', userId)
+            .maybeSingle();
+
+        if (responder != null) {
+          box.put("user_role", "responder");
+          debugPrint("Role detected: responder");
+        } else {
+          throw Exception("User role not found");
+        }
+      }
+
+      debugPrint("Login success");
+
       return response.user!;
     }  on AuthException catch (e) {
         debugPrint("AuthService Auth error: ${e.message}");
@@ -62,8 +107,24 @@ class AuthService {
   //sign out user
   Future<void> signOut() async {
     try {
-      debugPrint("AuthService: Signing out");
-      await client.auth.signOut();
+      final box = Hive.box("app_cache");
+
+      try {
+        debugPrint("AuthService: Signing out from Supabase");
+        await client.auth.signOut();
+      } catch (e) {
+        debugPrint("AuthService: Supabase signOut failed = $e");
+      }
+
+      debugPrint("AuthService: Clearing local cache");
+
+      await box.delete("supabase_session");
+      await box.delete("user_role");
+      await box.delete("user_id");
+      await box.delete("user_email");
+      await box.delete("resident_data");
+
+      debugPrint("AuthService: Local session cleared");
     } catch (e) {  
       debugPrint("Sign out error: $e");
       throw Exception("Failed to sign out.");
@@ -83,31 +144,143 @@ class AuthService {
 
   //to move
   Future<Map<String, dynamic>?> getCurrentResident() async {
-    final residentId = client.auth.currentUser;
+    final box = Hive.box("app_cache");
+    final user = client.auth.currentUser;
 
-    if (residentId == null) {
-      debugPrint("No logged in user");
+    debugPrint("resident: fetch start");
+
+    if (user == null) {
+      debugPrint("resident: no logged in user");
+      return null;
+    }
+
+    final offline = await isOffline();
+    debugPrint("resident: offline = $offline");
+
+    if (offline) {
+    debugPrint("resident: offline mode, loading from cache");
+
+    final cached = box.get("resident_data");
+
+    if (cached == null) {
+      debugPrint("resident: no cached data available");
+      return null;
+    }
+
+    if (cached is! String) {
+        debugPrint("resident: invalid cache type.delete");
+        box.delete("resident_data");
+        return null;
+    }
+
+      try {
+        final decoded = jsonDecode(cached);
+
+        if (decoded is! Map<String, dynamic>) {
+          debugPrint("resident: decoded cache invalid, clearing");
+          box.delete("resident_data");
+          return null;
+        }
+
+        final model = ResidentData.fromJson(decoded);
+        debugPrint("resident: model reconstructed from cache");
+
+        return model.toJson();
+
+      } catch (e) {
+        debugPrint("resident: cache decode error = $e");
+        box.delete("resident_data");
+        return null;
+      }
+    }
+
+    if (_isFetchingResident) {
+      debugPrint("resident: already fetching, returning cache");
+
+      final cached = box.get("resident_data");
+
+      if (cached is String) {
+        try {
+          final decoded = jsonDecode(cached);
+          return decoded;
+        } catch (_) {}
+      }
+
+      return null;
+    }
+
+    _isFetchingResident = true;
+    debugPrint("resident: fetch flag set true");
+
+    try {
+      debugPrint("resident: fetching from supabase for user ${user.id}");
+
+      final data = await client
+          .from('resident')
+          .select()
+          .eq('id', user.id)
+          .maybeSingle();
+
+      if (data != null) {
+        debugPrint("resident: data received from supabase");
+
+        final model = ResidentData.fromJson({
+          ...data,
+          "email": user.email
+        });
+
+        final encoded = jsonEncode(model.toJson());
+
+        debugPrint("resident: encoding successful");
+        debugPrint("resident: encoded length = ${encoded.length}");
+
+        box.put("resident_data", encoded);
+
+        debugPrint("resident: stored in hive as string");
+
+      } else {
+        debugPrint("resident: no resident record found");
+      }
+
+    } catch (e) {
+      debugPrint("resident: fetch error = $e");
+      debugPrint("resident: using offline fallback");
+    } finally {
+      _isFetchingResident = false;
+      debugPrint("resident: fetch flag reset false");
+    }
+
+    final cached = box.get("resident_data");
+
+    if (cached == null) {
+      debugPrint("resident: no cached data available");
+      return null;
+    }
+
+    if (cached is! String) {
+      debugPrint("resident: invalid cached type, clearing");
+      box.delete("resident_data");
+      return null;
     }
 
     try {
-      final data = await client
-        .from('resident')
-        .select()
-        .eq('id', residentId!.id)
-        .maybeSingle();
-      
-      if (data == null) return null;
-      
-      final merged = {
-        ...data,
-      "email": residentId.email,
-      };
+      final decoded = jsonDecode(cached);
 
-      debugPrint("Resident data: $data");
+      if (decoded is! Map<String, dynamic>) {
+        debugPrint("resident: decoded cached invalid, clearing");
+        box.delete("resident_data");
+        return null;
+      }
 
-      return merged;
+      final model = ResidentData.fromJson(decoded);
+
+      debugPrint("resident: returning final model as map");
+
+      return model.toJson();
+
     } catch (e) {
-      debugPrint("Error getting resident profile: $e");
+      debugPrint("resident: final decode error = $e");
+      box.delete("resident_data");
       return null;
     }
   }
@@ -201,24 +374,12 @@ class AuthService {
   return true;
 }
 
-  //resend supabase verification email
-  // Future<void> resendVerificationEmail(String email) async {
- 
-  //   try {
-  //     await client.auth.resend(
-  //       type: OtpType.signup,
-  //       email: email
-  //     );
-  //   } catch (e) {
-  //     debugPrint("Error resending verification email: $e");
-  //     throw Exception("Failed to resend verification email.");
-  //   }
-  // }
-
-  // Future<bool> isVerifiedAsync() async {
-  //   await client.auth.refreshSession();
-  //   return client.auth.currentUser?.emailConfirmedAt != null;
-  // }
-
-  // Stream<AuthState> get authStateChanges => client.auth.onAuthStateChange;
+  Future<bool> isOffline() async {
+    try {
+      final result = await InternetAddress.lookup('google.com');
+      return result.isEmpty || result[0].rawAddress.isEmpty;
+    } catch (_) {
+      return true;
+    }
+  }
 }
