@@ -81,6 +81,7 @@ class AuthService {
     await client.auth.refreshSession();
   }
 
+  //to move
   Future<Map<String, dynamic>?> getCurrentResident() async {
     final residentId = client.auth.currentUser;
 
@@ -94,10 +95,17 @@ class AuthService {
         .select()
         .eq('id', residentId!.id)
         .maybeSingle();
+      
+      if (data == null) return null;
+      
+      final merged = {
+        ...data,
+      "email": residentId.email,
+      };
 
       debugPrint("Resident data: $data");
 
-      return data;
+      return merged;
     } catch (e) {
       debugPrint("Error getting resident profile: $e");
       return null;
@@ -128,6 +136,7 @@ class AuthService {
   //   }
   // }
 
+  //to move
   Future<bool> signUpResident(ResidentData data) async {
   final authResponse = await client.auth.signUp(
     email: data.email,

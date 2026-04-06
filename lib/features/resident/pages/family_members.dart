@@ -1,13 +1,16 @@
-import 'package:agap/features/resident/pages/resident_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:agap/theme/color.dart';
-import 'package:agap/features/resident/pages/resident_dashboard.dart';
-import 'package:agap/features/resident/pages/emergency_hotlines.dart';
-import 'package:agap/features/resident/pages/send_sos.dart';
+
+import 'package:agap/features/resident/services/family_service.dart';
 import 'package:agap/features/resident/widgets/birthdate_format.dart'; 
+import 'package:agap/features/resident/widgets/resident_header.dart';
+import 'package:agap/features/resident/widgets/bottom_navbar.dart';
+
 
 class FamilyPage extends StatefulWidget {
-  const FamilyPage({super.key});
+  final Map<String, dynamic>? resident;
+
+  const FamilyPage({super.key, required this.resident});
 
   @override
   State<FamilyPage> createState() => _FamilyPageState();
@@ -17,32 +20,29 @@ class _FamilyPageState extends State<FamilyPage> {
   final int _selectedIndex = 3;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  String? nextOfKinId = "Juan Dela Cruz";
+  final FamilyService _familyService = FamilyService();
 
-  List<Map<String, String>> familyMembers = [
-    {
-      "firstName": "Maria",
-      "lastName": "Clara",
-      "relation": "Mother",
-      "phone": "0912 345 6789",
-      "birthdate": "05/12/1975",
-      "conditions": "Hypertension",
-      "history": "None",
-      "allergies": "Peanuts",
-      "medications": "Amlodipine"
-    },
-    {
-      "firstName": "Juan",
-      "lastName": "Dela Cruz",
-      "relation": "Father",
-      "phone": "0998 765 4321",
-      "birthdate": "11/24/1970",
-      "conditions": "Stable",
-      "history": "Asthma",
-      "allergies": "Dust",
-      "medications": "Inhaler (as needed)"
-    },
-  ];
+  List<Map<String, dynamic>> familyMembers = [];
+  bool isLoading = true;
+
+  String? nextOfKinId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFamily();
+  }
+
+  Future<void> _loadFamily() async {
+    final data = await _familyService.getFamilyMembers();
+
+    if (!mounted) return;
+
+    setState(() {
+      familyMembers = data;
+      isLoading = false;
+    });
+  }
 
   void _showDeleteMemberDialog() {
     showDialog(
@@ -56,16 +56,21 @@ class _FamilyPageState extends State<FamilyPage> {
             itemCount: familyMembers.length,
             itemBuilder: (context, index) {
               final member = familyMembers[index];
-              final fullName = "${member['firstName']} ${member['lastName']}";
+              final fullName = "${member['first_name']} ${member['last_name']}";
+              debugPrint(member.toString());
               return ListTile(
                 leading: const Icon(Icons.person_remove, color: Colors.red),
                 title: Text(fullName),
-                subtitle: Text(member['relation'] ?? ""),
-                onTap: () {
-                  setState(() {
-                    if (nextOfKinId == fullName) nextOfKinId = null;
-                    familyMembers.removeAt(index);
-                  });
+                subtitle: Text(member['relationship'] ?? ""),
+                onTap: () async {
+                  await _familyService.deleteFamilyMember(
+                    member['id'],
+                    member['is_registered'],
+                  );
+                  await _loadFamily();
+
+                  if (!mounted) return;
+
                   Navigator.pop(context);
                 },
               );
@@ -76,22 +81,22 @@ class _FamilyPageState extends State<FamilyPage> {
     );
   }
 
-  void _openMemberSheet({Map<String, String>? member}) {
+  void _openMemberSheet({Map<String, dynamic>? member}) {
     final bool isEditing = member != null;
-    final int? indexToUpdate = isEditing ? familyMembers.indexOf(member) : null;
-    final String oldMemberId = isEditing ? "${member['firstName']} ${member['lastName']}" : "";
+    // final int? indexToUpdate = isEditing ? familyMembers.indexOf(member) : null;
+    // final String oldMemberId = isEditing ? "${member['firstName']} ${member['lastName']}" : "";
 
-    final fNameCtrl = TextEditingController(text: member?['firstName'] ?? '');
-    final lNameCtrl = TextEditingController(text: member?['lastName'] ?? '');
+    final fNameCtrl = TextEditingController(text: member?['first_name'] ?? '');
+    final lNameCtrl = TextEditingController(text: member?['last_name'] ?? '');
     final bDateCtrl = TextEditingController(text: member?['birthdate'] ?? '');
-    final relCtrl = TextEditingController(text: member?['relation'] ?? '');
+    final relCtrl = TextEditingController(text: member?['relationship'] ?? '');
     final phoneCtrl = TextEditingController(text: member?['phone'] ?? '');
     final condCtrl = TextEditingController(text: member?['conditions'] ?? '');
     final histCtrl = TextEditingController(text: member?['history'] ?? '');
     final allergCtrl = TextEditingController(text: member?['allergies'] ?? '');
     final medCtrl = TextEditingController(text: member?['medications'] ?? '');
 
-    bool isNextOfKin = nextOfKinId == oldMemberId;
+    bool isNextOfKin = false;
 
     showModalBottomSheet(
       context: context,
@@ -181,51 +186,73 @@ class _FamilyPageState extends State<FamilyPage> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.agapCoral,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.agapCoral,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          Map<String, String> updatedMember = {
-                            "firstName": fNameCtrl.text,
-                            "lastName": lNameCtrl.text,
-                            "relation": relCtrl.text,
-                            "phone": phoneCtrl.text,
-                            "birthdate": bDateCtrl.text,
-                            "conditions": condCtrl.text,
-                            "history": histCtrl.text,
-                            "allergies": allergCtrl.text,
-                            "medications": medCtrl.text,
-                          };
-
-                          setState(() {
-                            if (isEditing && indexToUpdate != null) {
-                              familyMembers[indexToUpdate] = updatedMember;
-                            } else {
-                              familyMembers.add(updatedMember);
+                    ),
+                    onPressed: () async {
+                      if (!_formKey.currentState!.validate()) return;
+                      if (isEditing) {
+                        await _familyService.updateFamilyMember(
+                          id: member['id'],
+                          firstName: fNameCtrl.text,
+                          lastName: lNameCtrl.text,
+                          relationship: relCtrl.text,
+                          phone: phoneCtrl.text,
+                          birthdate: bDateCtrl.text,
+                          conditions: condCtrl.text,
+                          history: histCtrl.text,
+                          allergies: allergCtrl.text,
+                          medications: medCtrl.text,
+                          isNextOfKin: isNextOfKin,
+                        );
+                      } else {
+                              await _familyService.addFamilyMember(
+                                firstName: fNameCtrl.text,
+                                lastName: lNameCtrl.text,
+                                relationship: relCtrl.text,
+                                phone: phoneCtrl.text,
+                                birthdate: bDateCtrl.text,
+                                conditions: condCtrl.text,
+                                history: histCtrl.text,
+                                allergies: allergCtrl.text,
+                                medications: medCtrl.text,
+                                isNextOfKin: isNextOfKin,
+                              );
                             }
+                            await _loadFamily();
+                            if (!mounted) return;
 
-                            if (isNextOfKin) {
-                              nextOfKinId = "${fNameCtrl.text} ${lNameCtrl.text}";
-                            } else if (nextOfKinId == oldMemberId) {
-                              nextOfKinId = null;
+                            setState(() {
+                              if (isNextOfKin) {
+                                  nextOfKinId = "${fNameCtrl.text} ${lNameCtrl.text}";
+                            } else if (nextOfKinId ==
+                                 "${fNameCtrl.text} ${lNameCtrl.text}") {
+                                  nextOfKinId = null;
                             }
                           });
-                          Navigator.pop(context);
-                        }
-                      },
-                      child: Text(isEditing ? "Update Member Information" : "Save Member Information", 
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+
+                    if (!mounted) return;
+
+                      Navigator.pop(context);
+                    },
+                    child: Text(
+                      isEditing ? "Update Member Information"  : "Save Member Information", style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
+                  ),
                 ],
-              ),
             ),
           ),
         ),
-      ),
+        ),
+      )
     );
   }
 
@@ -233,50 +260,15 @@ class _FamilyPageState extends State<FamilyPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      bottomNavigationBar: _buildBottomBar(),
+      bottomNavigationBar: ResidentBottomNavBar(
+        selectedIndex: _selectedIndex,
+        resident: widget.resident
+      ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(24, 50, 24, 25),
-              decoration: const BoxDecoration(
-                color: AppColors.agapOrangeDeep,
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(20),
-                  bottomRight: Radius.circular(20),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Hi, Eleah',
-                        style: TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Philadelphia St., Bagumbayan, Iloilo, PH',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.white.withValues(alpha: 0.9),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Icon(Icons.notifications_none_outlined,
-                      color: Colors.white, size: 28),
-                ],
-              ),
-            ),
+            ResidentHeader(resident: widget.resident, isLoading: false),
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -338,7 +330,7 @@ class _FamilyPageState extends State<FamilyPage> {
     );
   }
 
-  Widget _buildMemberTile(Map<String, String> member) {
+  Widget _buildMemberTile(Map<String, dynamic> member) {
     bool isKin = nextOfKinId == "${member['firstName']} ${member['lastName']}";
 
     return Container(
@@ -366,7 +358,7 @@ class _FamilyPageState extends State<FamilyPage> {
                   children: [
                     Row(
                       children: [
-                        Text("${member['firstName']} ${member['lastName']}", 
+                        Text("${member['first_name']} ${member['last_name']}", 
                           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
                         if (isKin) ...[
                           const SizedBox(width: 8),
@@ -378,7 +370,7 @@ class _FamilyPageState extends State<FamilyPage> {
                         ]
                       ],
                     ),
-                    Text(member['relation']!, style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                    Text(member['relationship']!, style: const TextStyle(color: Colors.grey, fontSize: 13)),
                   ],
                 ),
               ),
@@ -398,12 +390,12 @@ class _FamilyPageState extends State<FamilyPage> {
             spacing: 20,
             runSpacing: 10,
             children: [
-              _buildInfoSnippet("Birthdate", member['birthdate']!),
-              _buildInfoSnippet("Phone Number", member['phone']!),
-              _buildInfoSnippet("Current Conditions", member['conditions']!),
-              _buildInfoSnippet("Allergies", member['allergies']!),
-              _buildInfoSnippet("Medications", member['medications']!),
-              _buildInfoSnippet("Past Medical History", member['history']!),
+              _buildInfoSnippet("Birthdate", member['birthdate']),
+              _buildInfoSnippet("Phone Number", member['phone']),
+              _buildInfoSnippet("Current Conditions", member['conditions']),
+              _buildInfoSnippet("Allergies", member['allergies']),
+              _buildInfoSnippet("Medications", member['medications']),
+              _buildInfoSnippet("Past Medical History", member['history']),
             ],
           ),
         ],
@@ -462,45 +454,5 @@ class _FamilyPageState extends State<FamilyPage> {
         ),
       ],
     );
-  }
-
-  Widget _buildBottomBar() {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      height: 65,
-      decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(40)),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _navItem(Icons.home, 0, () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ResidentDashboardPage()))),
-          _navItem(Icons.call, 1, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EmergencyHotlinesPage()))),
-          _buildCenterSosButton(),
-          _navItem(Icons.family_restroom, 3, () {}),
-          _navItem(Icons.person, 4, () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => const ProfilePage()),
-              );
-          }),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCenterSosButton() {
-    return GestureDetector(
-      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SosPage())),
-      child: Container(
-        width: 55, height: 55,
-        decoration: BoxDecoration(color: AppColors.agapOrangeAlt, shape: BoxShape.circle, border: Border.all(color: AppColors.agapCoral, width: 3)),
-        child: const Center(child: Text("SOS", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
-      ),
-    );
-  }
-
-  Widget _navItem(IconData icon, int index, VoidCallback onTap) {
-    return GestureDetector(onTap: onTap, child: Icon(icon, size: 28, color: _selectedIndex == index ? AppColors.agapCoral : Colors.black));
   }
 }

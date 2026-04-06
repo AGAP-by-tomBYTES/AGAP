@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:agap/theme/color.dart';
-import 'package:agap/features/resident/pages/resident_dashboard.dart';
-import 'package:agap/features/resident/pages/emergency_hotlines.dart';
-import 'package:agap/features/resident/pages/send_sos.dart';
-import 'package:agap/features/resident/pages/family_members.dart';
+
+import 'package:agap/features/auth/services/auth_service.dart';
+
+import 'package:agap/features/resident/services/resident_services.dart';
+import 'package:agap/features/resident/widgets/resident_header.dart';
+import 'package:agap/features/resident/widgets/bottom_navbar.dart';
+
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+  final Map<String, dynamic>? resident;
+  
+  const ProfilePage({super.key, required this.resident});
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -14,34 +19,47 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final int _selectedIndex = 4;
+  final ResidentService _residentService = ResidentService();
 
-  // Mock Data
-  Map<String, dynamic> userData = {
-    "firstName": "Eleah Joy",
-    "middleName": "Melchor",
-    "lastName": "Dela Cruz",
-    "suffix": "",
-    "email": "eleah.joy@email.com",
-    "phone": "0912 345 6789",
-    "birthdate": "05/12/1998",
-    "gender": "Female",
-    "houseNo": "12",
-    "street": "Philadelphia St.",
-    "barangay": "Bagumbayan",
-    "city": "Iloilo City",
-    "province": "Iloilo",
-    "postalCode": "5000",
-    "landmark": "Near the blue gate",
-    "householdSize": 4,
-    "children": 1,
-    "elderly": 1,
-    "disabled": 0,
-    "pets": "2 Dogs",
-    "conditions": "None",
-    "history": "None",
-    "allergies": "Peanuts, Dust",
-    "medications": "None",
-  };
+  bool isLoading = false;
+
+  late Map<String, dynamic> userData;
+
+  @override
+  void initState() {
+    super.initState();
+
+    userData = {
+  ...widget.resident ?? {},
+  
+  "firstName": widget.resident?['first_name'] ?? "",
+  "middleName": widget.resident?['middle_name'] ?? "",
+  "lastName": widget.resident?['last_name'] ?? "",
+  "suffix": widget.resident?['suffix'] ?? "",
+  "email": widget.resident?['email'] ?? "",
+  "phone": widget.resident?['phone'] ?? "",
+  "birthdate": widget.resident?['birthdate'] ?? "",
+  
+  "houseNo": widget.resident?['house_no'] ?? "",
+  "street": widget.resident?['street'] ?? "",
+  "barangay": widget.resident?['barangay'] ?? "",
+  "city": widget.resident?['city'] ?? "",
+  "province": widget.resident?['province'] ?? "",
+  "postalCode": widget.resident?['postal_code'] ?? "",
+  "landmark": widget.resident?['landmark'] ?? "",
+
+  "householdSize": widget.resident?['household_size'] ?? 1,
+  "children": widget.resident?['children'] ?? 0,
+  "elderly": widget.resident?['elderly'] ?? 0,
+  "disabled": widget.resident?['disabled'] ?? 0,
+
+  "pets": widget.resident?['pets'] ?? "",
+  "conditions": widget.resident?['conditions'] ?? "",
+  "history": widget.resident?['history'] ?? "",
+  "allergies": widget.resident?['allergies'] ?? "",
+  "medications": widget.resident?['medications'] ?? "",
+};
+  }
 
   void _openEditSheet(String section) {
     // Controllers
@@ -66,11 +84,10 @@ class _ProfilePageState extends State<ProfilePage> {
     final allergyCtrl = TextEditingController(text: userData['allergies']);
     final medCtrl = TextEditingController(text: userData['medications']);
 
-    // Temporary values for counters
-    int tempSize = userData['householdSize'];
-    int tempChildren = userData['children'];
-    int tempElderly = userData['elderly'];
-    int tempDisabled = userData['disabled'];
+    int tempSize = int.tryParse(userData['householdSize'].toString()) ?? 1;
+    int tempChildren = int.tryParse(userData['children'].toString()) ?? 0;
+    int tempElderly = int.tryParse(userData['elderly'].toString()) ?? 0;
+    int tempDisabled = int.tryParse(userData['disabled'].toString()) ?? 0;
 
     showModalBottomSheet(
       context: context,
@@ -113,7 +130,19 @@ class _ProfilePageState extends State<ProfilePage> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  _buildEditField("Email Address", emailCtrl),
+                  TextField(
+                    controller: emailCtrl,
+                    readOnly: true, 
+                    style: const TextStyle(color: Colors.grey),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.grey.shade200,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   _buildEditField("Phone Number", phoneCtrl),
                 ],
@@ -194,16 +223,51 @@ class _ProfilePageState extends State<ProfilePage> {
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12)),
                     ),
-                    onPressed: () {
-                      setState(() {
+                    onPressed: isLoading ? null : () async {
+
+                      final navigator = Navigator.of(context);
+                      final messenger = ScaffoldMessenger.of(context);
+                      
+                      setState(() => isLoading = true);
+
+                      try {
                         if (section == "Personal Info") {
-                          userData['firstName'] = fNameCtrl.text;
-                          userData['middleName'] = mNameCtrl.text;
-                          userData['lastName'] = lNameCtrl.text;
-                          userData['suffix'] = suffixCtrl.text;
-                          userData['email'] = emailCtrl.text;
-                          userData['phone'] = phoneCtrl.text;
+                          await _residentService.updateBasicInfo(
+                            firstName: fNameCtrl.text,
+                            middleName: mNameCtrl.text.isEmpty ? null
+                                        : mNameCtrl.text,
+                            lastName: lNameCtrl.text,
+                            suffix: suffixCtrl.text,
+                            phone: phoneCtrl.text, 
+                            // birthdate: birthdate, 
+                            // sex: sex
+                          );
+
+                          if (!mounted) return;
+
+                          setState(() {
+                            userData['firstName'] = fNameCtrl.text;
+                            userData['middleName'] = mNameCtrl.text;
+                            userData['lastName'] = lNameCtrl.text;
+                            userData['suffix'] = suffixCtrl.text;
+                            userData['phone'] = phoneCtrl.text;
+                          });
+
                         } else if (section == "Address") {
+                          await _residentService.updateAddress(
+                                  houseNo: houseCtrl.text,
+                                  street: streetCtrl.text,
+                                  barangay: brgyCtrl.text,
+                                  city: cityCtrl.text,
+                                  province: provCtrl.text,
+                                  region: "",
+                                  postalCode: zipCtrl.text,
+                                  landmark: landmarkCtrl.text,
+                          );
+
+                          if (!mounted) return;
+
+                          setState(() {
                           userData['houseNo'] = houseCtrl.text;
                           userData['street'] = streetCtrl.text;
                           userData['barangay'] = brgyCtrl.text;
@@ -211,24 +275,63 @@ class _ProfilePageState extends State<ProfilePage> {
                           userData['province'] = provCtrl.text;
                           userData['postalCode'] = zipCtrl.text;
                           userData['landmark'] = landmarkCtrl.text;
+                          });
                         } else if (section == "Household Info") {
-                          userData['householdSize'] = tempSize;
-                          userData['children'] = tempChildren;
-                          userData['elderly'] = tempElderly;
-                          userData['disabled'] = tempDisabled;
-                          userData['pets'] = petsCtrl.text;
+                           await _residentService.updateHousehold(
+                                  householdSize: tempSize,
+                                  children: tempChildren,
+                                  elderly: tempElderly,
+                                  disabled: tempDisabled,
+                                  pets: petsCtrl.text,
+                                );
+
+                            if (!mounted) return;
+
+                          setState(() {
+                                  userData['householdSize'] = tempSize;
+                                  userData['children'] = tempChildren;
+                                  userData['elderly'] = tempElderly;
+                                  userData['disabled'] = tempDisabled;
+                                  userData['pets'] = petsCtrl.text;
+                                });
                         } else if (section == "Medical Profile") {
-                          userData['conditions'] = condCtrl.text;
-                          userData['history'] = histCtrl.text;
-                          userData['allergies'] = allergyCtrl.text;
-                          userData['medications'] = medCtrl.text;
+                          await _residentService.updateMedicalProfile(
+                                  conditions: condCtrl.text,
+                                  history: histCtrl.text,
+                                  allergies: allergyCtrl.text,
+                                  medications: medCtrl.text,
+                                );
+
+                                if (!mounted) return;
+
+                                setState(() {
+                                  userData['conditions'] = condCtrl.text;
+                                  userData['history'] = histCtrl.text;
+                                  userData['allergies'] = allergyCtrl.text;
+                                  userData['medications'] = medCtrl.text;
+                                });
                         }
-                      });
-                      Navigator.pop(context);
-                    },
-                    child: const Text("Update Profile",
-                        style: TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold)),
+
+                      if (!mounted) return;
+
+                      navigator.pop();
+
+                      messenger.showSnackBar(
+                                const SnackBar(
+                                    content: Text("Profile updated successfully")),
+                      );
+                      }catch (e) {
+                        if (!mounted) return;
+                              messenger.showSnackBar(
+                                SnackBar(content: Text("Error: $e")),
+                              );
+                            } finally {
+                              if (mounted) { setState(() => isLoading = false);}
+                            }
+                          },
+                    child: isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text("Save Changes"),
                   ),
                 ),
               ],
@@ -243,45 +346,15 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      bottomNavigationBar: _buildBottomBar(),
+      bottomNavigationBar: ResidentBottomNavBar(
+        selectedIndex: _selectedIndex,
+        resident: widget.resident
+      ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// ISLAND HEADER
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(24, 50, 24, 25),
-              decoration: const BoxDecoration(
-                color: AppColors.agapOrangeDeep,
-                borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(20),
-                    bottomRight: Radius.circular(20)),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Hi, ${userData['firstName']}',
-                          style: const TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white)),
-                      const SizedBox(height: 2),
-                      Text(
-                          '${userData['street']}, ${userData['barangay']}, ${userData['city']}',
-                          style: TextStyle(
-                              fontSize: 11,
-                              color: Colors.white.withValues(alpha: 0.9))),
-                    ],
-                  ),
-                  const Icon(Icons.notifications_none_outlined,
-                      color: Colors.white, size: 28),
-                ],
-              ),
-            ),
+            ResidentHeader(resident: widget.resident, isLoading: false),
 
             Padding(
               padding: const EdgeInsets.all(24.0),
@@ -366,7 +439,7 @@ class _ProfilePageState extends State<ProfilePage> {
           _buildCountItem("Children", userData['children']),
           _buildCountItem("Elderly", userData['elderly']),
           _buildCountItem("Disabled", userData['disabled']),
-          _buildCountItem("Pets", userData['pets']),
+          _buildCountItem("Pets", userData['pets'].toString()),
         ],
       ),
     );
@@ -486,10 +559,32 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildLogoutButton() {
+    final AuthService authService = AuthService();
+
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
-        onPressed: () {},
+             onPressed: () async {
+        final navigator = Navigator.of(context);
+        final messenger = ScaffoldMessenger.of(context);
+
+        try {
+          await authService.signOut();
+
+          if (!mounted) return;
+
+          navigator.pushNamedAndRemoveUntil(
+            '/role', 
+            (route) => false,
+          );
+        } catch (e) {
+          if (!mounted) return;
+
+          messenger.showSnackBar(
+            SnackBar(content: Text("Logout failed: $e")),
+          );
+        }
+      },
         icon: const Icon(Icons.logout, color: Colors.redAccent),
         label: const Text("Logout Account",
             style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
@@ -501,69 +596,6 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
       ),
     );
-  }
-
-  Widget _buildBottomBar() {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      height: 65,
-      decoration: BoxDecoration(
-          color: Colors.grey.shade200, borderRadius: BorderRadius.circular(40)),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _navItem(
-              Icons.home,
-              0,
-              () => Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) => ResidentDashboardPage()))),
-          _navItem(
-              Icons.call,
-              1,
-              () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) => const EmergencyHotlinesPage()))),
-          _buildCenterSosButton(),
-          _navItem(
-              Icons.family_restroom,
-              3,
-              () => Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (_) => const FamilyPage()))),
-          _navItem(Icons.person, 4, () {}),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCenterSosButton() {
-    return GestureDetector(
-      onTap: () => Navigator.push(
-          context, MaterialPageRoute(builder: (_) => const SosPage())),
-      child: Container(
-        width: 55,
-        height: 55,
-        decoration: BoxDecoration(
-            color: AppColors.agapOrangeAlt,
-            shape: BoxShape.circle,
-            border: Border.all(color: AppColors.agapCoral, width: 3)),
-        child: const Center(
-            child: Text("SOS",
-                style: TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.bold))),
-      ),
-    );
-  }
-
-  Widget _navItem(IconData icon, int index, VoidCallback onTap) {
-    return GestureDetector(
-        onTap: onTap,
-        child: Icon(icon,
-            size: 28,
-            color: _selectedIndex == index ? AppColors.agapCoral : Colors.black));
   }
 
   Widget _counterCard(
