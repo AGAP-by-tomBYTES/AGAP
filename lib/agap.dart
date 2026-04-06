@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'core/routes/routes.dart';
-import 'core/routes/screen_routes.dart';
 import 'core/services/navigation_service.dart';
 
 import 'package:agap/theme/color.dart';
@@ -19,7 +18,7 @@ class Agap extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'AGAP',
       navigatorKey: NavigationService.navigatorKey,
-      initialRoute: Routes.root,
+      initialRoute: NavigationService.initialRoute,
       onGenerateRoute: (settings) {
         debugPrint("Routing to: ${settings.name}");
         debugPrint("Route arguments: ${settings.arguments}");

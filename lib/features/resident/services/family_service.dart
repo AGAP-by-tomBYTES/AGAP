@@ -30,6 +30,10 @@ class FamilyService {
   }) async {
     final userId = client.auth.currentUser!.id;
 
+    if (isNextOfKin) {
+      await _clearNextOfKin(userId);
+    }
+
     await client.from('family_member').insert({
       'resident_id': userId,
       'first_name': firstName,
@@ -58,7 +62,13 @@ class FamilyService {
     String? medications,
     bool isNextOfKin = false,
   }) async {
-    final data = {
+    final userId = client.auth.currentUser!.id;
+    
+    if (isNextOfKin) {
+      await _clearNextOfKin(userId);
+     }
+
+    await client.from('family_member').update({
       'first_name': firstName,
       'last_name': lastName,
       'relationship': relationship,
@@ -69,11 +79,8 @@ class FamilyService {
       'allergies': allergies,
       'medications': medications,
       'is_next_of_kin': isNextOfKin,
-    };
-
-    await client.from('family_member').update(data).eq('id', id);
+    }).eq('id', id);
   }
-
 
   //delete member
   Future<void> deleteFamilyMember(String id, bool isRegistered) async {
@@ -82,5 +89,12 @@ class FamilyService {
     } else {
       await client.from('family_member').delete().eq('id', id);
     }
+  }
+
+  Future<void> _clearNextOfKin(String residentId) async {
+    await client
+        .from('family_member')
+        .update({'is_next_of_kin': false})
+        .eq('resident_id', residentId);
   }
 }
