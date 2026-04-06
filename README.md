@@ -8,6 +8,8 @@
 
 AGAP is built in consultation with **MDRRMO Miag-ao.** The system bridges a critical gap between residents in need and the responders who serve them. AGAP makes emergency coordination *faster*, *smarter*, and *calm*.
 
+[View Full Documentation](docs/AGAP_Overview.pdf)
+
 | Who It's For | What They Get |
 |---|---|
 | Residents | SOS alerts, medical info storage, family management |
