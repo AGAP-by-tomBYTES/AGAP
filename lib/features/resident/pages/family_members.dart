@@ -25,8 +25,6 @@ class _FamilyPageState extends State<FamilyPage> {
   List<Map<String, dynamic>> familyMembers = [];
   bool isLoading = true;
 
-  String? nextOfKinId;
-
   @override
   void initState() {
     super.initState();
@@ -341,7 +339,7 @@ class _FamilyPageState extends State<FamilyPage> {
   }
 
   Widget _buildMemberTile(Map<String, dynamic> member) {
-    bool isKin = nextOfKinId == "${member['first_name']} ${member['last_name']}";
+    bool isKin = member['is_next_of_kin'] == true;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:hive/hive.dart';
 import 'dart:convert';
-import 'dart:io';
+// import 'dart:io';
 
 import 'package:agap/core/services/supabase_service.dart';
 import 'package:agap/features/resident/models/resident_data.dart';
@@ -143,7 +143,7 @@ class AuthService {
   }
 
   //to move
-  Future<Map<String, dynamic>?> getCurrentResident() async {
+Future<Map<String, dynamic>?> getCurrentResident() async {
     final box = Hive.box("app_cache");
     final user = client.auth.currentUser;
 
@@ -154,46 +154,6 @@ class AuthService {
       return null;
     }
 
-    final offline = await isOffline();
-    debugPrint("resident: offline = $offline");
-
-    if (offline) {
-    debugPrint("resident: offline mode, loading from cache");
-
-    final cached = box.get("resident_data");
-
-    if (cached == null) {
-      debugPrint("resident: no cached data available");
-      return null;
-    }
-
-    if (cached is! String) {
-        debugPrint("resident: invalid cache type.delete");
-        box.delete("resident_data");
-        return null;
-    }
-
-      try {
-        final decoded = jsonDecode(cached);
-
-        if (decoded is! Map<String, dynamic>) {
-          debugPrint("resident: decoded cache invalid, clearing");
-          box.delete("resident_data");
-          return null;
-        }
-
-        final model = ResidentData.fromJson(decoded);
-        debugPrint("resident: model reconstructed from cache");
-
-        return model.toJson();
-
-      } catch (e) {
-        debugPrint("resident: cache decode error = $e");
-        box.delete("resident_data");
-        return null;
-      }
-    }
-
     if (_isFetchingResident) {
       debugPrint("resident: already fetching, returning cache");
 
@@ -202,7 +162,10 @@ class AuthService {
       if (cached is String) {
         try {
           final decoded = jsonDecode(cached);
-          return decoded;
+          if (decoded is Map<String, dynamic>) {
+            debugPrint("resident: cache hit during active fetch");
+            return decoded;
+          }
         } catch (_) {}
       }
 
@@ -210,10 +173,9 @@ class AuthService {
     }
 
     _isFetchingResident = true;
-    debugPrint("resident: fetch flag set true");
 
     try {
-      debugPrint("resident: fetching from supabase for user ${user.id}");
+      debugPrint("resident: fetching from supabase for ${user.id}");
 
       final data = await client
           .from('resident')
@@ -226,66 +188,49 @@ class AuthService {
 
         final model = ResidentData.fromJson({
           ...data,
-          "email": user.email
+          "email": user.email,
         });
 
         final encoded = jsonEncode(model.toJson());
 
-        debugPrint("resident: encoding successful");
         debugPrint("resident: encoded length = ${encoded.length}");
 
         box.put("resident_data", encoded);
 
-        debugPrint("resident: stored in hive as string");
+        debugPrint("resident: cache saved successfully");
 
-      } else {
-        debugPrint("resident: no resident record found");
+        return model.toJson();
       }
 
     } catch (e) {
       debugPrint("resident: fetch error = $e");
-      debugPrint("resident: using offline fallback");
+      debugPrint("resident: fallback to cache triggered");
     } finally {
       _isFetchingResident = false;
-      debugPrint("resident: fetch flag reset false");
     }
 
     final cached = box.get("resident_data");
 
-    if (cached == null) {
-      debugPrint("resident: no cached data available");
-      return null;
-    }
+    if (cached is String) {
+      try {
+        final decoded = jsonDecode(cached);
 
-    if (cached is! String) {
-      debugPrint("resident: invalid cached type, clearing");
-      box.delete("resident_data");
-      return null;
-    }
-
-    try {
-      final decoded = jsonDecode(cached);
-
-      if (decoded is! Map<String, dynamic>) {
-        debugPrint("resident: decoded cached invalid, clearing");
+        if (decoded is Map<String, dynamic>) {
+          debugPrint("resident: returning cached data (final)");
+          return decoded;
+        }
+      } catch (e) {
+        debugPrint("resident: cache decode error = $e");
         box.delete("resident_data");
-        return null;
       }
-
-      final model = ResidentData.fromJson(decoded);
-
-      debugPrint("resident: returning final model as map");
-
-      return model.toJson();
-
-    } catch (e) {
-      debugPrint("resident: final decode error = $e");
-      box.delete("resident_data");
-      return null;
     }
-  }
 
-  // sign up
+    debugPrint("resident: no data available");
+    return null;
+  }
+ 
+ 
+ // sign up
   // Future<User> signUp({
   //   required String email,
   //   required String password
@@ -373,13 +318,4 @@ class AuthService {
   debugPrint("Resident profile inserted successfully");
   return true;
 }
-
-  Future<bool> isOffline() async {
-    try {
-      final result = await InternetAddress.lookup('google.com');
-      return result.isEmpty || result[0].rawAddress.isEmpty;
-    } catch (_) {
-      return true;
-    }
-  }
 }

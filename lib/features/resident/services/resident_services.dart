@@ -80,23 +80,38 @@ class ResidentService {
     await client.from('resident').update(data).eq('id', userId);
   }
 
-Future<void> updateMedicalProfile({
-  String? conditions,
-  String? history,
-  String? allergies,
-  String? medications,
-}) async {
-  final userId = client.auth.currentUser!.id;
+  Future<void> updateMedicalProfile({
+    String? conditions,
+    String? history,
+    String? allergies,
+    String? medications,
+  }) async {
+    final userId = client.auth.currentUser!.id;
 
-  final Map<String, dynamic> data = {
-  ...?(conditions != null ? {'conditions': conditions} : null),
-  ...?(history != null ? {'history': history} : null),
-  ...?(allergies != null ? {'allergies': allergies} : null),
-  ...?(medications != null ? {'medications': medications} : null),
-};
+    final Map<String, dynamic> data = {
+    ...?(conditions != null ? {'conditions': conditions} : null),
+    ...?(history != null ? {'history': history} : null),
+    ...?(allergies != null ? {'allergies': allergies} : null),
+    ...?(medications != null ? {'medications': medications} : null),
+    'last_medical_update': DateTime.now().toIso8601String(),
+  };
 
-  await client.from('resident').update(data).eq('id', userId);
-}
+  if (data.isEmpty) return;
+
+    await client.from('resident').update(data).eq('id', userId);
+  }
+
+  Future<List<dynamic>> getNotifications() async {
+    final userId = client.auth.currentUser!.id;
+
+    final res = await client
+        .from('notifications')
+        .select()
+        .eq('user_id', userId)
+        .order('created_at', ascending: false);
+
+    return res;
+  }
 
 
 
