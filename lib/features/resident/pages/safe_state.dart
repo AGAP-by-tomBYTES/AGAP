@@ -3,9 +3,24 @@ import 'package:agap/features/resident/pages/resident_dashboard.dart';
 import 'package:agap/features/services/models/alert_type.dart';
 import 'package:agap/features/services/sos_alert_service.dart';
 import 'danger_page.dart';
+import 'package:intl/intl.dart'; // Ensure this is imported
 
-class SafePage extends StatelessWidget {
+class SafePage extends StatefulWidget {
   const SafePage({super.key});
+
+  @override
+  State<SafePage> createState() => _SafePageState();
+}
+
+class _SafePageState extends State<SafePage> {
+  late final String formattedTime;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize time once when the page loads
+    formattedTime = DateFormat('hh:mm a').format(DateTime.now());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,10 +38,10 @@ class SafePage extends StatelessWidget {
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 12),
-                child: const Center(
+                child: Center(
                   child: Text(
-                    "STATUS REPORTED    8:15 AM",
-                    style: TextStyle(
+                    "STATUS REPORTED    $formattedTime", // Dynamic time here
+                    style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
@@ -67,7 +82,7 @@ class SafePage extends StatelessWidget {
                   const SizedBox(height: 30),
 
                   const Text(
-                    "You’re safe,\nEleah.",
+                    "You’re safe.",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 28,
@@ -78,16 +93,16 @@ class SafePage extends StatelessWidget {
                   const SizedBox(height: 12),
 
                   const Text(
-                    "Your household and responders\nhave been notified.",
+                    "The responders have been notified.",
                     textAlign: TextAlign.center,
                     style: TextStyle(color: Colors.black54),
                   ),
 
                   const SizedBox(height: 6),
 
-                  const Text(
-                    "8:54 AM · Miagao, Iloilo",
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  Text(
+                    "$formattedTime · Miagao, Iloilo", // Dynamic time here too
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                   const SizedBox(height: 36),
 
