@@ -63,7 +63,7 @@ class SupabaseService {
     if (!isInitialized) return;
 
     try {
-      await client.from('alerts').update({
+      await client.from('alerts').upsert({
         'id': alert.id,
         'type': alert.type,
         'timestamp': alert.timestamp,
