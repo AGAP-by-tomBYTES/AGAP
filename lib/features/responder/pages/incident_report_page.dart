@@ -106,9 +106,18 @@ class _IncidentReportPageState extends State<IncidentReportPage> {
     _addressController.text = widget.resident.address;
     _ageController.text = widget.resident.age.replaceAll(' years old', '');
     _sexController.text = widget.resident.gender;
-    _contactController.text = 'Auto from resident profile';
-    _nextOfKinController.text = 'Auto from resident profile';
-    _nokContactController.text = 'Auto from resident profile';
+    _contactController.text = widget.resident.details
+      .firstWhere((d) => d.label.toLowerCase().contains('contact'),
+          orElse: () => const ResidentDetailData(label: '', value: ''))
+      .value;
+    _nextOfKinController.text = widget.resident.details
+        .firstWhere((d) => d.label.toLowerCase().contains('guardian'),
+            orElse: () => const ResidentDetailData(label: '', value: ''))
+        .value;
+    _nokContactController.text = widget.resident.details
+        .firstWhere((d) => d.label.toLowerCase().contains('nok'),
+            orElse: () => const ResidentDetailData(label: '', value: ''))
+        .value;
     _signsSymptomsController.text = widget.resident.detailsTitle;
     _historyController.text = widget.resident.details
         .map((detail) => '${detail.label}: ${detail.value}')
