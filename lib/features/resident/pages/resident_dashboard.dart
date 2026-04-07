@@ -293,7 +293,7 @@ class _ResidentDashboardPageState extends State<ResidentDashboardPage> {
   );
 }
 
-Widget _buildInfoRow(IconData icon, String text, {bool isHeader = false}) {
+Widget _buildInfoRow(IconData icon, String? text, {bool isHeader = false}) {
   return Row(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -301,7 +301,7 @@ Widget _buildInfoRow(IconData icon, String text, {bool isHeader = false}) {
       const SizedBox(width: 12),
       Expanded(
         child: Text(
-          text,
+          text ?? 'N/A',
           style: TextStyle(
             fontSize: isHeader ? 16 : 13,
             fontWeight: isHeader ? FontWeight.bold : FontWeight.w500,
