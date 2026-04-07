@@ -63,12 +63,7 @@ void main() async {
       }
       await SupabaseService.client.auth.recoverSession(cachedSession);
       debugPrint("session restored");
-
-      if (cachedRole == "resident") {
-        NavigationService.initialRoute = Routes.residentDashboard;
-      } else if (cachedRole == "responder") {
-        NavigationService.initialRoute = Routes.responderDashboard;
-      }
+      NavigationService.initialRoute = Routes.root;
     } catch (e) {
       debugPrint("Failed to restore session: $e");
     }
