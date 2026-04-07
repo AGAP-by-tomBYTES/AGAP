@@ -199,7 +199,7 @@ Future<Map<String, dynamic>?> getCurrentResident() async {
 
         debugPrint("resident: cache saved successfully");
 
-        return model.toJson();
+        return {...model.toJson(), 'email': user.email};
       }
 
     } catch (e) {
