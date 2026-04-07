@@ -11,10 +11,14 @@ import 'package:agap/features/auth/services/auth_service.dart';
 //redirect to correct screen
 class AuthRedirectService {
 
+  
+
   final AuthService _authService = AuthService();
 
   Future<void> handleAuthRedirect({required bool mounted}) async {
     debugPrint("Checking authentication status");
+
+    await _authService.refreshSession();
 
     final user = _authService.currentUser;
 

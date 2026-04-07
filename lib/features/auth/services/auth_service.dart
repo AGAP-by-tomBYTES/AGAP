@@ -324,7 +324,7 @@ Future<Map<String, dynamic>?> getCurrentResident() async {
     try {
       debugPrint("ResidentService: Checking if responder for $userId");
 
-      final data = await client.from('responder')
+      final data = await client.from('responders')
             .select().eq('id', userId).maybeSingle();
         
         final result = data != null;

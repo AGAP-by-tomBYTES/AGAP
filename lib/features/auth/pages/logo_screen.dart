@@ -21,8 +21,11 @@ class _LogoScreenState extends State<LogoScreen> {
   void initState() {
     super.initState();
     debugPrint("LogoScreen: initState called");
-    _redirectService.handleAuthRedirect(mounted: mounted);
-    debugPrint("LogoScreen: auth redirect called");
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _redirectService.handleAuthRedirect(mounted: mounted);
+      debugPrint("LogoScreen: auth redirect called");
+    });
+   
   }
   
   @override
