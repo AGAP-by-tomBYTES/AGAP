@@ -318,4 +318,22 @@ Future<Map<String, dynamic>?> getCurrentResident() async {
   debugPrint("Resident profile inserted successfully");
   return true;
 }
+
+  //check if responder profile exists
+  Future<bool> isResponder(String userId) async {
+    try {
+      debugPrint("ResidentService: Checking if responder for $userId");
+
+      final data = await client.from('responder')
+            .select().eq('id', userId).maybeSingle();
+        
+        final result = data != null;
+        debugPrint("ResidentService: isResponder = $result");
+        
+        return result;
+      } catch (e) {
+        debugPrint("ResidentService: Error checking responder profile: $e");
+        return false;
+      }
+  }
 }

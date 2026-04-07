@@ -3,7 +3,6 @@ import 'package:agap/core/routes/screen_routes.dart';
 import 'package:agap/core/services/navigation_service.dart';
 
 import 'package:agap/features/auth/services/auth_service.dart';
-import 'package:agap/features/auth/services/resident_service.dart';
 
 //auth redirect
 //checks if user is logged in
@@ -13,7 +12,6 @@ import 'package:agap/features/auth/services/resident_service.dart';
 class AuthRedirectService {
 
   final AuthService _authService = AuthService();
-  final ResidentService _residentService = ResidentService();
 
   Future<void> handleAuthRedirect({required bool mounted}) async {
     debugPrint("Checking authentication status");
@@ -42,7 +40,7 @@ class AuthRedirectService {
     if (_authService.isVerified()) {
       debugPrint("User verified");
 
-      final isResponder = await _residentService.isResponder(user.id);
+      final isResponder = await _authService.isResponder(user.id);
       if (!mounted) {
         debugPrint("Widget not mounted, aborting navigation");
         return;
