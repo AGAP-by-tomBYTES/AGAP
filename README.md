@@ -177,7 +177,7 @@ The result is a solution grounded in reality, not assumption.
 ## How to Download
 ### Android (APK)
 
-1. Download the APK file here: **[Download Link — Coming Soon]**
+1. Download the APK file here: **[https://drive.google.com/drive/folders/1osH1Grp-MjnTXtWPU3dYTbmVKFG6bnfR?fbclid=IwY2xjawRBSJ5leHRuA2FlbQIxMABicmlkETFwelUzREFacW1RUTRUNVRoc3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHkD9ijuwDg0M9xY2Vz9apbD5AG1z3iZWTS273oGDaGspUsaiwiQzqV40WQYZ_aem_QD-3uuPq8l6fRDO-QyrwaQ]**
 2. On your Android device, go to **Settings → Security** and enable **"Install from Unknown Sources"**
 3. Open the downloaded APK file and tap **Install**
 4. Launch **AGAP** and create your account
